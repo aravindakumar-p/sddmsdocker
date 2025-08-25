@@ -1,0 +1,15 @@
+{
+  "name": "sd-dms-extensions",
+  "version": "0.1.0",
+  "description": "Extensions for SD DMS",
+  "main": "index.js",
+  "dependencies": {
+    "axios": "^0.21.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Santhosh Reddy, ShakeDeal",
+  "license": "ISC"
+}

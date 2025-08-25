@@ -1,0 +1,46 @@
+{
+	"collection": {
+		"USERS": "sp_users",
+		"CAMPAIGNS": "sp_campaigns",
+		"PRODUCT_OFFER_MAPPINGS": "sp_products_offers",
+		"DISPATCHED_OFFERS": "sp_dispatced_offer",
+		"OFFERS": "sp_offers",
+		"PRODUCTS": "sp_products",
+		"LOG_TABLE": "backend_logs",
+		"PROJECTS": "sp_projects"
+	},
+	"logging_system": {
+		"save_normal_logs": true,
+		"save_error_logs": true
+	},
+	"defaults": {
+		"product_id": 1,
+		"campaign_id": "3b2cfa31-0edb-4713-a4dd-8535e2583795",
+		"asset_base_url": "https://campaignsqa.shakepe.com/assets",
+		"base_url": "https://campaignsqa.shakepe.com",
+		"sc_inner_zoom": 1,
+		"sc_height": 300,
+		"sc_width": 300,
+		"sc_border_thickness": "2px",
+		"sc_border_radius":"10px",
+		"sc_border_color": "#000",
+		"sc_button_background":"rgba(229,213,255,0.94)",
+		"sc_button_foreground": "#27263f",
+		"sc_button_radius":"0px",
+		"sc_inner_bg":"#c4deff",
+		"sc_inner_text_color":"#003a79",
+		"sc_button_height":"20px",
+		"sc_button_text":"Apply",
+		"sc_inner_image":"",
+		"scratch_card": ""
+	},
+	"access_api_keys": {
+		"sp_sangeetha_1": {
+			"sp_api_key": "sp_IsWQ8VSkb2OdZiNWTpQLkeMrMHXsPijUQ40riGbTtmd4J5BzebnLbsGfNONbU",
+			"sp_role": "da063760-c368-4633-a7ed-c88f4c4a3081",
+			"sp_token": "Bearer IzHWRjckuGeJoS0tWCzHD-yFpFOG_tn5",
+			"sp_project": 4,
+			"sp_user": "59ce2e9b-ebe8-4136-8070-630d26dbb453"
+		}
+	}
+}

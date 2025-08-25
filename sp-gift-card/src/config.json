@@ -1,0 +1,8 @@
+{
+	"url": {
+		"sp_brand": "items/client_product_mapping_sd_brand_details_1"
+	},
+	"fields": {
+		"sp_brand": ["id", "sd_brand_details_id.sku.amount"]
+	}
+}

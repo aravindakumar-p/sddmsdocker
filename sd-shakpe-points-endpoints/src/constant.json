@@ -1,0 +1,71 @@
+{
+    "log_type"  : {
+        "success" : "success",
+        "log" : "log",
+        "error" : "error"
+    },
+    "collection_name": {
+		"santa_log": "santa_log"
+	},
+    "collections": {
+		"shakepe_orders": [
+			"id",
+			"po_number",
+            "shakepe_codes_orders.sd_codes.id",
+			"client.client_name",
+			"client.id",
+            "retry"
+		],
+        "shakepe_codes_inventory" : ["code", "serial_number", "id" , "activation_date"]
+	},
+    "status" :  "assigned to client",
+    "success" : "Success",
+    "available" : "Available",
+    "failed" : "Failed" , 
+    "success_comment" : "All the code are successfully assigned",
+    "failed_comment" : "Enterprise is failed . Please retry.",
+    "messages" : {
+        "successful" : "Update is Completed and Successful",
+        "revoked" : "Revoking of all card is Successful " ,
+        "invaildpayload" : "Invaild Payload",
+        "invaildCredentials" : "Invalid user credentials.",
+        "order_id_notexit" : "Order ID is not there",
+        "client_id_not_exist" : "client_id is required",
+        "internal_server_error" : "Internal Server Error"
+    },
+    "codes" : "ShakePe Codes",
+    "code_error" : {
+        "INVALID_CREDENTIALS" : "INVALID_CREDENTIALS"
+    } ,
+    "status_update" : {
+        "inactive" : "inactive",
+        "active" : "active",
+        "redeemed" : "redeemed",
+        "unredeemed" : "unredeemed",
+        "valid" : "valid",
+        "expired" : "expired",
+        "partially_redeemed" : "partially redeemed",
+        "fully_redeemed" : "fully redeemed",
+        "disabled" : "disabled"
+    } ,
+    "enterprise_type" : {
+        "enterprise_type_default" : "default",
+        "enterprise_type_not_default" : "not_default"
+    },
+    "brand_approval_status" : {
+        "brand_approval_status_pending" : "pending",
+        "brand_approval_status_approved" : "approved",
+        "brand_approval_status_declined" : "declined"
+    },
+    "santa" : {
+        "partially_redeemed" :"partially_Redeemed",
+        "code_single_status" : "code_single_status",
+        "points_redeemed" :"points_redeemed",
+        "code_redeemed" : "code_redeemed",
+        "code_expire" : "code_expire",
+        "code_activation" : "code_activation"
+    },
+    "rabbitMQ" : {
+        "rabbitMQ" : "rabbitMQ Up"
+    }
+}

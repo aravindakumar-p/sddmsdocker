@@ -1,0 +1,29 @@
+{
+    "log_type"  : {
+        "success" : "success",
+        "log" : "log",
+        "error" : "error"
+    },
+    "collection_name": {
+		"diy_log": "diy_log"
+	},
+    "code_error" : {
+        "INVALID_CREDENTIALS" : "INVALID_CREDENTIALS"
+    },
+    "product_type": {
+        "LINKS": "Links",
+        "CODES": "ShakePe Codes"
+    },
+    "status":{
+        "ORDER_OPEN": "Order Open",
+        "ORDER_COMPLETED": "Order Completed",
+        "ORDER_CANCELLED": "Order Cancelled"
+    },
+    "messages" : {
+        "successful" : "Update is Completed and Successful",
+        "revoked" : "Revoking of all card is Successful " ,
+        "invaildpayload" : "Invaild Payload",
+        "invaildCredentials" : "Invalid user credentials.",
+        "order_id_notexit" : "Order ID is not there"
+    }
+}

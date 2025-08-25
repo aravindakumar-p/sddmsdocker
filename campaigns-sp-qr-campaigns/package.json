@@ -1,0 +1,40 @@
+{
+	"name": "directus-extension-sp-qr-campaigns",
+	"version": "1.0.0",
+	"keywords": [
+		"directus",
+		"directus-extension",
+		"directus-custom-endpoint"
+	],
+	"directus:extension": {
+		"type": "endpoint",
+		"path": "../extensions/endpoints/sp-qr-campaigns/index.js",
+		"source": "src/index.ts",
+		"host": "^9.18.1"
+	},
+	"scripts": {
+		"build": "directus-extension build",
+		"dev": "directus-extension build -w --no-minify",
+		"watch": "npm-watch"
+	},
+	"watch": {
+		"build": {
+			"patterns": [
+				"src"
+			],
+			"extensions": "ts"
+		}
+	},
+	"devDependencies": {
+		"@directus/extensions-sdk": "9.18.1",
+		"@types/busboy": "^1.5.4",
+		"@types/node": "^18.14.0",
+		"@types/uuid-validate": "^0.0.3",
+		"typescript": "^4.9.5"
+	},
+	"dependencies": {
+		"axios": "^1.9.0",
+		"busboy": "^1.6.0",
+		"uuid-validate": "^0.0.3"
+	}
+}

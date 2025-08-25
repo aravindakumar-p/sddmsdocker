@@ -1,0 +1,44 @@
+version: '3.2'
+services:
+  database:
+    image: postgres:12
+    container_name: "${SD_CONTAINER_NAME_DB}"
+    volumes:
+      - ./data/database:/var/lib/postgresql/data
+    networks:
+      - "${SD_NETWORK_NAME}"
+    command: -p "${DB_PORT}"
+    ports:
+      - "${DB_PORT}:${DB_PORT}"
+    environment:
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      POSTGRES_DB: "${POSTGRES_DB}"
+
+  cache:
+    image: redis:6
+    container_name: "${SD_CONTAINER_NAME_CACHE}"
+    networks:
+      - "${SD_NETWORK_NAME}"
+    command: --port "${CACHE_REDIS_PORT}"
+    ports:
+      - "${CACHE_REDIS_PORT}:${CACHE_REDIS_PORT}"
+
+  directus:
+    image: shakedeal/sd_zeus:9.21.2.8
+    container_name: "${SD_CONTAINER_NAME_APP}"
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "${PORT}:${PORT}"
+    networks:
+      - "${SD_NETWORK_NAME}"
+    environment:
+      DB_HOST: "database"
+    volumes:
+      - ./extensions:/var/directus/extensions
+      - ./data/uploads:/uploads
+
+networks:
+  directus:

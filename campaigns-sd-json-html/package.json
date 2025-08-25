@@ -1,0 +1,24 @@
+{
+	"name": "directus-extension-sd-json-html",
+	"version": "1.0.0",
+	"keywords": [
+		"directus",
+		"directus-extension",
+		"directus-custom-display"
+	],
+	"directus:extension": {
+		"type": "display",
+		"path": "../extensions/displays/sd-json-html/index.js",
+		"source": "src/index.ts",
+		"host": "^9.18.1"
+	},
+	"scripts": {
+		"build": "directus-extension build",
+		"dev": "directus-extension build -w --no-minify"
+	},
+	"devDependencies": {
+		"@directus/extensions-sdk": "9.18.1",
+		"typescript": "^4.9.4",
+		"vue": "^3.2.45"
+	}
+}

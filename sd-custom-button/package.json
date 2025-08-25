@@ -1,0 +1,31 @@
+{
+	"name": "directus-extension-sd-custom-button",
+	"description": "Please enter a description for your extension",
+	"icon": "extension",
+	"version": "1.0.0",
+	"keywords": [
+		"directus",
+		"directus-extension",
+		"directus-custom-interface"
+	],
+	"directus:extension": {
+		"type": "interface",
+		"path": "../extensions/interfaces/sd-custom-button/index.js",
+		"source": "src/index.ts",
+		"host": "^9.24.0"
+	},
+	"scripts": {
+		"build": "directus-extension build",
+		"dev": "directus-extension build -w --no-minify",
+		"link": "directus-extension link"
+	},
+	"devDependencies": {
+		"@directus/extensions-sdk": "9.24.0",
+		"@types/nodemailer": "^6.4.9",
+		"typescript": "^5.1.6",
+		"vue": "^3.3.4"
+	},
+	"dependencies": {
+		"nodemailer": "^6.9.4"
+	}
+}

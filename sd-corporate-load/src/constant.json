@@ -1,0 +1,22 @@
+{
+	"ERROR": {
+		"actions" : "Actions is Required"
+	} ,
+	"collections": {
+	"directus_files": [
+			"filename_download"
+		],
+		"client": [
+			"client_name",
+			"client_email",
+			"pan_number",
+			"status",
+			"product_type_mapping.*",
+			"wallet",
+			"credit_wallet",
+			"credit_used",
+			"id"
+		]
+	}
+
+}

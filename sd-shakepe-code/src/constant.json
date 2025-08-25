@@ -1,0 +1,204 @@
+{
+	"error": {
+		"insufficient_qty": "InSufficient Quantity in Inventory",
+		"enterpricesurl": "There is some tech issue. Please contact support@shakepe.com",
+		"insufficient_balance": "InSufficient Balance",
+		"enterpricesqueuedown": "There is some tech issue. Please contact support@shakepe.com",
+		"assigned": "Already Codes are assigned",
+		"something": "There is some tech issue. Please contact support@shakepe.com",
+		"code_generated": "The Code are Already Generated",
+		"excel_error": "Unable to attach the Excel file. Please ensure the data is valid and try again.",
+		"virual_codes": "For Virtual Max Code Generated Should be less then 5000",
+		"code_length": "Value has to be less than or equal to 18 or Value has to be greater than or equal to 14",
+		"printer": "Printer Details is required for phyiscal",
+		"credit":"Payment term should be credit to apply credit limit",
+		"creditLimitZero":"Credit limit should be greater than 0",
+		"creditWallet" : "Your credit limit should be greater than previous credit limit",
+		"insufficient_amount": "Wallet has insufficient amount",
+		"samePoc": "Funds cannot be transfered to same POC"
+	},
+	"collections": {
+		"shakepe_orders": [
+			"id",
+			"po_number",
+			"shakepe_codes_orders.id",
+			"shakepe_codes_orders.total_no_of_codes",
+			"shakepe_codes_orders.value_of_code",
+			"shakepe_codes_orders.validity",
+			"shakepe_codes_orders.activation",
+			"shakepe_codes_orders.prefix",
+			"shakepe_codes_orders.sd_codes",
+			"client.client_name",
+			"client.id",
+			"retry",
+			"form_factor",
+			"file_upload_data",
+			"printer.*",
+			"checkbox",
+			"product_type",
+			"poc"
+
+		],
+		"shakepe_codes_inventory": [
+			"code",
+			"serial_number",
+			"id"
+		],
+		"client_product_mapping": [
+			"client_id.client_name",
+			"id",
+			"product_type",
+			"printer_details.id",
+			"printer_details.printer_id.printer_name",
+			"printer_details.per_card_cost",
+			"printer_details.per_card_cost_printer",
+			"credit_limt",
+			"credit_limit_status",
+			"previous_credit_limit"
+		],
+		"client": [
+			"product_type_mapping.id",
+			"product_type_mapping.validity_of_codes",
+			"product_type_mapping.product_type",
+			"product_type_mapping.status",
+			"product_type_mapping.printer_details.id",
+			"product_type_mapping.payment_terms",
+			"credit_limit",
+			"credit_limit_status",
+			"credit_wallet",
+			"credit_used",
+			"previous_credit_wallet",
+			"previous_credit_limit"
+		],
+		"performing_invoices": [
+			"client.client_name",
+			"pi_download"
+
+		],
+		"directus_inovoice_files": [
+			"directus_files_id"
+		],
+		"directus_files": [
+			"filename_download"
+		],
+		"corporate_load" : [
+			"wallet",
+			"client_name",
+			"credit_wallet",
+			"amount",
+			"status",
+			"payment_status"
+		],
+	
+	"poc_fund_transfer" : [
+			"client",
+			"sender_poc.*",
+			"receiver_poc.*",
+			"amount",
+			"status"
+		
+		],
+		"client_point_of_contact" : [
+			"client_id",
+			"name",
+			"receiver_poc.*",
+			"amount",
+			"status",
+			"wallet"
+		
+		]
+
+	},
+	"collection_name": {
+		"santa_log": "santa_log"
+	},
+	"codes": "ShakePe Codes",
+	"condition": {
+		"shakepe_orders": [
+			"Order Open",
+			"Order Processed"
+		],
+		"processed": "Order Processed"
+	},
+	"InActive": "inactive",
+	"Available": "Available",
+	"Pushed": "Pending",
+	"comment_enterprice": "Pending from  Enterprise Portal",
+	"logger": {
+		"log": "log",
+		"success": "success",
+		"error": "error"
+	},
+	"status": {
+		"assigningClient": "Assigning to Client",
+		"available": "Available",
+		"pending": "pending",
+		"approved": "approved",
+		"declined": "declined",
+		"delivered": "Delivered",
+		"rejected": "Rejected",
+		"sendtoprinter": "sent to printer",
+		"na": "na"
+		
+	},
+	"email": {
+		"codeRequest": "codeRequests",
+		"sendingToPrinter": "sendingToPrinter",
+		"approvedCodeRequest": "approvedCodeRequest",
+		"declinedCodeRequest": "declinedCodeRequest",
+		"sendToclient": "sendToClient"
+	},
+	"emailSubject": {
+		"codeRequestSubject": "Code Request Approval -",
+		"printingSubject": "Printing Request: Attached File with Security PIN",
+		"approvedCodeRequest": "Approval of New Codes Request -",
+		"declinedCodeRequest": "Decline of New Codes Request - ",
+		"sendingPiToclient": "Proforma Invoice Attached for Your Reference"
+	},
+	"fields": {
+		"shakepe_codes_request": [
+			"id",
+			"number_of_codes",
+			"prefix",
+			"shakepe_codes",
+			"user_created.*",
+			"code_length",
+			"client.client_id.client_name",
+			"printer.printer_id.printer_name",
+			"printer.printer_id.email",
+			"printer.per_card_cost_printer",
+			"printer.per_card_cost",
+			"printer.file_upload.directus_files_id.id",
+			"printer.file_upload.directus_files_id.filename_download",
+			"printers.email",
+			"type"
+		],
+		"shakepe_codes_request_resend": [
+			"prefix",
+			"shakepe_codes.serial_number",
+			"shakepe_codes.code",
+			"shakepe_codes.prefix",
+			"user_created.*",
+			"code_length",
+			"client.client_id.client_name",
+			"printer.printer_id.printer_name",
+			"printer.printer_id.email",
+			"printer.printer_id.per_card_cost_for_printer",
+			"printers.email",
+			"printer.per_card_cost",
+			"printer.file_upload.directus_files_id.id",
+			"printer.file_upload.directus_files_id.filename_download",
+			"type"
+		],
+		"shakepe_codes_inventory": [
+			"serial_number",
+			"code",
+			"prefix"
+		]
+	},
+	"resend": "resend",
+	"shakepe_orders": {
+		"shakepe_codes": "ShakePe Codes",
+		"virtual": "Virtual"
+	}
+}

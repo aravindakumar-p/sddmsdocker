@@ -1,0 +1,70 @@
+version: '3.2'
+services:
+  database:
+    image: postgres:12
+    container_name: dms_db
+    volumes:
+      - ./data/database:/var/lib/postgresql/data
+    networks:
+      - directus
+    ports:
+      - "${DB_PORT}:${DB_PORT}"
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_USER=$POSTGRES_USER
+      - POSTGRES_PASSWORD=$POSTGRES_PASSWORD
+      - POSTGRES_DB=$POSTGRES_DB
+
+  cache:
+    image: redis:6
+    container_name: dms_cache
+    networks:
+      - directus
+    ports:
+      - "${CACHE_REDIS_PORT}:${CACHE_REDIS_PORT}"
+
+  directus:
+    image: directus/directus:v9.0.0-rc.24
+    container_name: dms_app
+    env_file:
+      - .env
+    ports:
+      - "${PORT}:${PORT}"
+    networks:
+      - directus
+    environment:
+      - KEY=$KEY
+      - SECRET=$SECRET
+      - DB_CLIENT=$DB_CLIENT
+      - DB_HOST='database'
+      - DB_PORT=$DB_PORT
+      - DB_DATABASE=$DB_DATABASE
+      - DB_USER=$DB_USER
+      - DB_PASSWORD=$DB_PASSWORD
+      - EXTENSIONS_PATH=$EXTENSIONS_PATH
+      - CACHE_ENABLED=$CACHE_ENABLED
+      - CACHE_STORE=$CACHE_STORE
+      - CACHE_REDIS='redis://cache:6379'
+      - ADMIN_EMAIL=$ADMIN_EMAIL
+      - ADMIN_PASSWORD=$ADMIN_PASSWORD
+      - STORAGE_LOCATIONS=$STORAGE_LOCATIONS
+      - STORAGE_LOCAL_PUBLIC_URL=$STORAGE_LOCAL_PUBLIC_URL
+      - STORAGE_LOCAL_DRIVER=$STORAGE_LOCAL_DRIVER
+      - STORAGE_LOCAL_ROOT=$STORAGE_LOCAL_ROOT
+      - ACCESS_TOKEN_TTL=$ACCESS_TOKEN_TTL
+      - REFRESH_TOKEN_TTL=$REFRESH_TOKEN_TTL
+      - REFRESH_TOKEN_COOKIE_SECURE=$REFRESH_TOKEN_COOKIE_SECURE
+      - REFRESH_TOKEN_COOKIE_SAME_SITE=$REFRESH_TOKEN_COOKIE_SAME_SITE
+      - EMAIL_FROM=$EMAIL_FROM
+      - EMAIL_TRANSPORT=$EMAIL_TRANSPORT
+      - EMAIL_SMTP_POOL=$EMAIL_SMTP_POOL
+      - EMAIL_SMTP_HOST=$EMAIL_SMTP_HOST
+      - EMAIL_SMTP_PORT=$EMAIL_SMTP_PORT
+      - EMAIL_SMTP_SECURE=$EMAIL_SMTP_SECURE
+      - EMAIL_SMTP_USER=$EMAIL_SMTP_USER
+      - EMAIL_SMTP_PASSWORD=$EMAIL_SMTP_PASSWORD
+      - PUBLIC_URL=$PUBLIC_URL
+
+networks:
+  directus:

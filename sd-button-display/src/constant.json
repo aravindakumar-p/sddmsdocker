@@ -1,0 +1,7 @@
+{
+	"vouchers": "Vouchers",
+	"giftcard": "Gift Card",
+	"field": {
+		"client_brand_commercial": ["flow", "brand_name", "discount", "status"]
+	}
+}

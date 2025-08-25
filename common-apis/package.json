@@ -1,0 +1,32 @@
+{
+	"name": "directus-extension-sd-vouchers",
+	"version": "1.0.0",
+	"keywords": [
+		"directus",
+		"directus-extension",
+		"directus-custom-endpoint"
+	],
+	"directus:extension": {
+		"type": "endpoint",
+		"path": "../extensions/endpoints/commons/index.js",
+		"source": "src/index.ts",
+		"host": "^9.18.1"
+	},
+	"scripts": {
+		"build": "directus-extension build",
+		"dev": "directus-extension build -w --no-minify"
+	},
+	"devDependencies": {
+		"@directus/extensions-sdk": "9.18.1",
+		"@types/node": "^18.11.9",
+		"typescript": "^4.9.3"
+	},
+	"dependencies": {
+		"axios": "^0.27.2",
+		"excel4node": "^1.8.0",
+		"exceljs": "^4.3.0",
+		"export-from-json": "^1.7.2",
+		"json2xls": "^0.1.2",
+		"node-fetch": "^3.3.1"
+	}
+}
