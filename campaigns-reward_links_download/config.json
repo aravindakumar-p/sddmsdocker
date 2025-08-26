@@ -1,9 +1,0 @@
-{
-    "collection": {
-        "REWARD_CAMPAIGNS": "sp_reward_campaigns",
-        "BACK_LOGS": "backend_logs"
-    },
-    "defaults": {
-        "REWARD_LINK_URL": "https://rewardlinks.shakepe.com/links/"
-    }
-}

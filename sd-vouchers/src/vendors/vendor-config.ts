@@ -15,7 +15,7 @@ const workAdvantageConfig = {
 		country: process.env.WA_COUNTRY,
 		reference_id: process.env.WA_RF_ID
 	},
-	code_validity_time: (process.env.WA_AUTH_CODE_VALIDITY_TIME) ? process.env.WA_AUTH_CODE_VALIDITY_TIME : 21600 /* Default 6 Hours */
+	code_validity_time: (process.env.WA_AUTH_CODE_VALIDITY_TIME)? process.env.WA_AUTH_CODE_VALIDITY_TIME : 21600 /* Default 6 Hours */
 }
 
 const qcAmazonConfig = {
@@ -24,9 +24,9 @@ const qcAmazonConfig = {
 	password: process.env.QC_AMZN_PASSWORD,
 	client_secret: process.env.QC_AMZN_CLIENT_SECRET,
 	authorization: process.env.QC_AMZN_AUTHORIZATION,
-	order_history_retrieval_sleep_time: (process.env.QC_AMZN_HISTORY_RETRIEVAL_SLEEP_TIME) ? process.env.QC_AMZN_HISTORY_RETRIEVAL_SLEEP_TIME : 500 /* Default 500ms */,
+	order_history_retrieval_sleep_time: (process.env.QC_AMZN_HISTORY_RETRIEVAL_SLEEP_TIME)? process.env.QC_AMZN_HISTORY_RETRIEVAL_SLEEP_TIME : 500 /* Default 500ms */,
 	base_url: process.env.QC_AMZN_BASE_URL,
-	code_validity_time: (process.env.QC_AMZN_AUTH_CODE_VALIDITY_TIME) ? process.env.QC_AMZN_AUTH_CODE_VALIDITY_TIME : 21600 /* Default 6 Hours */,
+	code_validity_time: (process.env.QC_AMZN_AUTH_CODE_VALIDITY_TIME)? process.env.QC_AMZN_AUTH_CODE_VALIDITY_TIME : 21600 /* Default 6 Hours */,
 	place_order_config: {
 		firstname: process.env.QC_AMZN_FIRSTNAME,
 		lastname: process.env.QC_AMZN_LASTNAME,
@@ -51,9 +51,9 @@ const quickcilverConfig = {
 	password: process.env.QUICK_CILVER_PASSWORD,
 	client_secret: process.env.QUICK_CILVER_CLIENT_SECRET,
 	authorization: process.env.QUICK_CILVER_AUTHORIZATION,
-	order_history_retrieval_sleep_time: (process.env.QUICK_CILVER_HISTORY_RETRIEVAL_SLEEP_TIME) ? process.env.QUICK_CILVER_HISTORY_RETRIEVAL_SLEEP_TIME : 500 /* Default 500ms */,
+	order_history_retrieval_sleep_time: (process.env.QUICK_CILVER_HISTORY_RETRIEVAL_SLEEP_TIME)? process.env.QUICK_CILVER_HISTORY_RETRIEVAL_SLEEP_TIME : 500 /* Default 500ms */,
 	base_url: process.env.QUICK_CILVER_BASE_URL,
-	code_validity_time: (process.env.QUICK_CILVER_AUTH_CODE_VALIDITY_TIME) ? process.env.QUICK_CILVER_AUTH_CODE_VALIDITY_TIME : 21600 /* Default 6 Hours */,
+	code_validity_time: (process.env.QUICK_CILVER_AUTH_CODE_VALIDITY_TIME)? process.env.QUICK_CILVER_AUTH_CODE_VALIDITY_TIME : 21600 /* Default 6 Hours */,
 	place_order_config: {
 		firstname: process.env.QUICK_CILVER_FIRSTNAME,
 		lastname: process.env.QUICK_CILVER_LASTNAME,
@@ -70,7 +70,7 @@ const quickcilverConfig = {
 	error_code: {
 		DUPLICATE_ORDER_ERROR: 5313
 	},
-	cardNumber: process.env.QC_CARDNUMBER
+	cardNumber:process.env.QC_CARDNUMBER
 }
 
 const flipkartConfig = {
@@ -82,17 +82,11 @@ const flipkartConfig = {
 	baseUrl: process.env.FLIPKART_GIFTING_BASE_URL
 }
 
-const rewardStoreConfig = {
-	base_url: process.env.REWARD_ST_BASE_URL,
-	client_id: process.env.REWARD_ST_CLIENT_ID,
-	client_secret: process.env.REWARD_ST_CLIENT_SECRET,
-}
 export default {
 	workAdvantageConfig,
 	qcAmazonConfig,
 	flipkartConfig,
-	quickcilverConfig,
-	rewardStoreConfig
+	quickcilverConfig
 }
 
 

@@ -191,7 +191,7 @@ export default class QuickCilver {
 			});
 
 			const responseJson = await response.json();
-			await new LogSys().log(`get Order Status${JSON.stringify(response)}`, false, reference_id,vendor_code);
+			await new LogSys().log(`get Order Status${response}`, false, reference_id,vendor_code);
 			return { response: responseJson };
 		} catch (e) {
 			await new LogSys().jsonError({

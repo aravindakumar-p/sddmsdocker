@@ -46,6 +46,7 @@ export default class QCAmazon {
 			var absApiUrl = api_url;
 			var clientSecret = this.client_secret;
 
+
 			let sortObject = (object) => {
 				if (object instanceof Array) {
 					var sortedObj = [],
@@ -115,7 +116,7 @@ export default class QCAmazon {
 		}
 	};
 
-	getAuthCode = async (referenceId, vendor_code) => {
+	getAuthCode = async (referenceId,vendor_code) => {
 		try {
 			const response = await axios.post(this.base_url + '/oauth2/verify', {
 				clientId: this.client_id,
@@ -130,19 +131,15 @@ export default class QCAmazon {
 
 			return { code: authorizationCode };
 		} catch (e) {
-			await new LogSys().jsonError(
-				{
-					exception: e,
-					error: 'QC getAuthCode Error',
-				},
-				referenceId,
-				vendor_code
-			);
+			await new LogSys().jsonError({
+				exception: e,
+				error: 'QC getAuthCode Error',				
+			},referenceId,vendor_code);
 			return { codeException: true };
 		}
 	};
 
-	getOAuthToken = async (code, referenceId, vendor_code) => {
+	getOAuthToken = async (code,referenceId,vendor_code) => {
 		try {
 			const response = await axios.post(this.base_url + '/oauth2/token', {
 				clientId: this.client_id,
@@ -155,21 +152,19 @@ export default class QCAmazon {
 			store.qc_amazon.OAUTH_CODE = token;
 			store.qc_amazon.OAUTH_CODE_LAST_UPDATED = new Date().getTime();
 
+
 			return { access_token: token };
 		} catch (e) {
-			await new LogSys().jsonError(
-				{
-					exception: e,
-					error: 'QC getOAuthToken Error',
-				},
-				referenceId,
-				vendor_code
-			);
+			await new LogSys().jsonError({
+				exception: e,
+				error: 'QC getOAuthToken Error',
+			},	referenceId,
+			vendor_code);
 			return { oAuthException: true };
 		}
 	};
 
-	getOrderStatus = async (reference_id, access_token, vendor_code) => {
+	getOrderStatus = async (reference_id, access_token,vendor_code) => {
 		try {
 			const apiUrl = this.base_url + `/rest/v3/order/${reference_id}/status`;
 
@@ -182,9 +177,11 @@ export default class QCAmazon {
 				Authorization: !apiUrl.includes('zeus') ? `Bearer ${access_token}` : '',
 			};
 
-			if (apiUrl.includes('zeus')) {
-				headers['sp-qc-auth'] = `Bearer ${access_token}`;
+			if (apiUrl.includes("zeus")) {
+				headers["sp-qc-auth"] = `Bearer ${access_token}`;
 			}
+
+
 
 			const response = await fetch(apiUrl, {
 				headers: headers,
@@ -192,31 +189,20 @@ export default class QCAmazon {
 			});
 
 			const responseJson = await response.json();
-			await new LogSys().log(`get Order Status${JSON.stringify(response)}`, false, reference_id, vendor_code);
+			await new LogSys().log(`get Order Status${response}`, false, reference_id,vendor_code);
 			return { response: responseJson };
 		} catch (e) {
-			await new LogSys().jsonError(
-				{
-					exception: e,
-					error: 'QC getOrderStatus Error',
-				},
-				reference_id,
-				vendor_code
-			);
+			await new LogSys().jsonError({
+				exception: e,
+				error: 'QC getOrderStatus Error',
+			},
+			reference_id,
+			vendor_code);
 			return { oAuthException: true };
 		}
 	};
 
-	placeVouchersOrder = async ({
-		qty,
-		vendorSku,
-		access_token,
-		referenceId,
-		price,
-		currencyISOCode,
-		syncOnly,
-		vendor_code,
-	}) => {
+	placeVouchersOrder = async ({ qty, vendorSku, access_token, referenceId, price, currencyISOCode, syncOnly,vendor_code }) => {
 		try {
 			const reqBody = {
 				address: {
@@ -236,7 +222,7 @@ export default class QCAmazon {
 				payments: [
 					{
 						code: 'svc',
-						amount: price * qty,
+						amount: price*qty,
 					},
 				],
 				refno: referenceId,
@@ -253,8 +239,8 @@ export default class QCAmazon {
 				],
 			};
 
-			await new LogSys().log(`QC-AMAZON Body:${JSON.stringify(reqBody)}`, null, referenceId, vendor_code);
-			await new LogSys().log(`QC-AMAZON access_token:${access_token}`, null, referenceId, vendor_code);
+			await new LogSys().log(`QC-AMAZON Body:${JSON.stringify(reqBody)}`, null,referenceId,vendor_code);
+			await new LogSys().log(`QC-AMAZON access_token:${access_token}`, null,referenceId,vendor_code);
 			const apiUrl = this.base_url + '/rest/v3/orders';
 
 			const headers = {
@@ -266,9 +252,10 @@ export default class QCAmazon {
 				Authorization: !apiUrl.includes('zeus') ? `Bearer ${access_token}` : '',
 			};
 
-			if (apiUrl.includes('zeus')) {
-				headers['sp-qc-auth'] = `Bearer ${access_token}`;
+			if (apiUrl.includes("zeus")) {
+				headers["sp-qc-auth"] = `Bearer ${access_token}`;
 			}
+
 
 			const response = await fetch(apiUrl, {
 				headers: headers,
@@ -296,33 +283,30 @@ export default class QCAmazon {
 			}
 
 			try {
-				walletBalance = responseJson['payments'][0]['balance'];
+				walletBalance = responseJson["payments"][0]["balance"];
+
 			} catch (e) {
-				await new LogSys().jsonError(
-					{
-						exception: e,
-						error: 'Wallet balance retrieval Error',
-					},
-					referenceId,
-					vendor_code
-				);
+				await new LogSys().jsonError({
+					exception: e,
+					error: 'Wallet balance retrieval Error',
+				},
+				referenceId, 
+				vendor_code);
 			}
 
 			return { vouchers, success, message, orderId, status, statusCode: code, walletBalance };
 		} catch (e) {
-			await new LogSys().jsonError(
-				{
-					exception: e,
-					error: 'QC placeVouchersOrder Error',
-				},
-				referenceId,
-				vendor_code
-			);
+			await new LogSys().jsonError({
+				exception: e,
+				error: 'QC placeVouchersOrder Error',
+			},
+			referenceId, 
+				vendor_code);
 			return { orderException: true };
 		}
 	};
 
-	async getOlderOrderDetails(vendorOrderId: any, access_token: any, referenceId: any, vendor_code: any) {
+	async getOlderOrderDetails(vendorOrderId:any, access_token: any,referenceId:any,vendor_code:any) {
 		try {
 			const apiUrl = this.base_url + `/rest/v3/order/${vendorOrderId}/cards/?limit=400`;
 
@@ -335,8 +319,8 @@ export default class QCAmazon {
 				Authorization: !apiUrl.includes('zeus') ? `Bearer ${access_token}` : '',
 			};
 
-			if (apiUrl.includes('zeus')) {
-				headers['sp-qc-auth'] = `Bearer ${access_token}`;
+			if (apiUrl.includes("zeus")) {
+				headers["sp-qc-auth"] = `Bearer ${access_token}`;
 			}
 
 			const response = await fetch(apiUrl, {
@@ -345,6 +329,7 @@ export default class QCAmazon {
 			});
 
 			const responseJson = await response.json();
+
 
 			let { cards } = responseJson;
 			let success = false;
@@ -365,15 +350,12 @@ export default class QCAmazon {
 
 			return { vouchers, success, message: '' };
 		} catch (e) {
-			await new LogSys().jsonError(
-				{
-					exception: e,
-					error: 'QC getOlderOrderDetails Error',
-				},
-				referenceId,
-				vendor_code
-			);
-			return { oldOrderException: true, vendorCode: vendor_code };
+			await new LogSys().jsonError({
+				exception: e,
+				error: 'QC getOlderOrderDetails Error',
+			},
+			referenceId,vendor_code);
+			return { oldOrderException: true,vendorCode:vendor_code };
 		}
 	}
 
@@ -390,8 +372,8 @@ export default class QCAmazon {
 				Authorization: !apiUrl.includes('zeus') ? `Bearer ${access_token}` : '',
 			};
 
-			if (apiUrl.includes('zeus')) {
-				headers['sp-qc-auth'] = `Bearer ${access_token}`;
+			if (apiUrl.includes("zeus")) {
+				headers["sp-qc-auth"] = `Bearer ${access_token}`;
 			}
 
 			const response = await fetch(apiUrl, {
@@ -400,11 +382,11 @@ export default class QCAmazon {
 			});
 
 			const responseJson = await response.json();
-			const categoryId = responseJson['id'];
+			const categoryId = responseJson["id"];
 
 			return {
-				categoryId,
-			};
+				categoryId
+			}
 		} catch (e) {
 			await new LogSys().jsonError({
 				exception: e,
@@ -414,9 +396,9 @@ export default class QCAmazon {
 		}
 	}
 
-	async getProducts(categoryId: any, access_token: any) {
+	async getProducts(categoryId: any, access_token:any) {
 		try {
-			await new LogSys().log(`categoryId ${categoryId}`, false, null, null);
+			await new LogSys().log(`categoryId ${categoryId}`, false, null,null);
 
 			const apiUrl = this.base_url + `/rest/v3/catalog/categories/${categoryId}/products`;
 
@@ -429,8 +411,8 @@ export default class QCAmazon {
 				Authorization: !apiUrl.includes('zeus') ? `Bearer ${access_token}` : '',
 			};
 
-			if (apiUrl.includes('zeus')) {
-				headers['sp-qc-auth'] = `Bearer ${access_token}`;
+			if (apiUrl.includes("zeus")) {
+				headers["sp-qc-auth"] = `Bearer ${access_token}`;
 			}
 
 			const response = await fetch(apiUrl, {
@@ -439,22 +421,20 @@ export default class QCAmazon {
 			});
 
 			const responseJson = await response.json();
-			const productList = responseJson['products'];
-			await new LogSys().log(`productList ${JSON.stringify(productList)}`, false, null, null);
+			const productList = responseJson["products"];
+			await new LogSys().log(`productList ${productList}`, false, null,null);
 
 			return {
-				productList,
-			};
+				productList
+			}
 		} catch (e) {
-			await new LogSys().jsonError(
-				{
-					exception: e,
-					error: 'QC getCategory Error',
-				},
-				null,
-				null
-			);
+			await new LogSys().jsonError({
+				exception: e,
+				error: 'QC getCategory Error',
+			},null,null);
 			return null;
 		}
 	}
+
+
 }

@@ -2,14 +2,12 @@ import { VoucherResponse } from '../models/common';
 import Getters from '../db/getters';
 import Setters from '../db/setters';
 import VendorVouchers from '../vendors';
+import config from '../config.json';
 import LogSys from '../helpers/logger';
 import CoreController from './core-controller';
-import { getQueueForClient, queueEvents } from '../queue/voucherQueue';
-import { CONFIG } from '../config';
 
-export default async function vouchersController({ voucherRequest, services, accountabilitySchema, options, env }: any) {
-
-	let reference_id = '';
+export default async function vouchersController({ voucherRequest, services, accountabilitySchema, options, env }) {
+	let reference_id  = '';
 	let vendor_code = '';
 	try {
 		/* Boiler Plate Code
@@ -41,29 +39,30 @@ export default async function vouchersController({ voucherRequest, services, acc
 		const { ItemsService } = services;
 
 		const get = new Getters(ItemsService, accountabilitySchema);
-		
+		const set = new Setters(ItemsService, accountabilitySchema);
 
 		/*Check WORK ADVANTAGE,Amazon Referance Number is already exist or not, if it is exist assign the vendor   */
 		let getOrderDetails: any = [];
 		const vendorInfo: any = {};
-		getOrderDetails = await get.getVendorOrderByReferenceId(options.reference_id, null);
+		getOrderDetails = await get.getVendorOrderByReferenceId(options.reference_id,null);
 		
 		if (getOrderDetails.length !== 0) {
 			vendorInfo.api_integration_id = getOrderDetails[0].vendor.api_integration_id || '';
 		} else {
+			const getRefId = options.reference_id + '-' + 1;
 
-			getOrderDetails = await get.getVendorOrderByReferenceId(options.reference_id, null);
+			getOrderDetails = await get.getVendorOrderByReferenceId(options.reference_id,null);
 			
 			if (getOrderDetails.length !== 0) {
 				vendorInfo.api_integration_id = getOrderDetails[0].vendor.api_integration_id || '';
 			}
 		}
 		/* Get Brand Details for a given SKU : returns empty array if brand is Inactive*/
-		const brandStatus = await get.checkBrandStatus(sku, amt, cur, options.reference_id, null);
+		const brandStatus = await get.checkBrandStatus(sku, amt, cur,options.reference_id,null);
 		/* No Need to go further in code if the brand itself is 'inactive' */
 		if (brandStatus) {
 			/* Get the Best Vendor for a Voucher */
-			const brandVendorMappingResponse = await get.bestVendor(sku, amt, cur, options.reference_id, null);
+			const brandVendorMappingResponse = await get.bestVendor(sku, amt, cur,options.reference_id,null);
 			const bestVendor = brandVendorMappingResponse ? brandVendorMappingResponse['choose_a_vendor'] : null;
 			const bestVendorId = brandVendorMappingResponse ? bestVendor['id'] : null;
 			/* apiIntegrationID shall be the mapper between the Vendor in the vendor details collection and the integration here */
@@ -71,6 +70,7 @@ export default async function vouchersController({ voucherRequest, services, acc
 			const bestVendorName = brandVendorMappingResponse ? bestVendor['entity_name'] : null;
 
 			/* Vendor Vouchers Class to handle all aspects of retrieving vouchers from 3rd party apis */
+			const vendorVoucher = new VendorVouchers();
 
 			/* New Introduction of Core Controller shall be used for all vendors instead of directly calling vendor vouchers */
 			const coreController = new CoreController(services, accountabilitySchema);
@@ -84,13 +84,13 @@ export default async function vouchersController({ voucherRequest, services, acc
 					/* if we get api_integration_id from referance number will assign it here */
 					apiIntegrationID = vendorInfo ? vendorInfo.api_integration_id : apiIntegrationID;
 				}
-				reference_id = options.reference_id;
+				 reference_id  =  options.reference_id;
 				 vendor_code = apiIntegrationID;
 				switch (apiIntegrationID) {
 					/* WorkAdvantage Integration */
-					case CONFIG.vendor_id_mapping.WORK_ADVANTAGE:
+					case config.vendor_id_mapping.WORK_ADVANTAGE:
 						finalResponse = await coreController.placeNewOrderAndStoreVoucher({
-							vendor_code: CONFIG.vendor_id_mapping.WORK_ADVANTAGE,
+							vendor_code: config.vendor_id_mapping.WORK_ADVANTAGE,
 							reference_id: options.reference_id,
 							options: options,
 							brand_sku: sku,
@@ -100,9 +100,9 @@ export default async function vouchersController({ voucherRequest, services, acc
 						break;
 
 					/* QC AMAZON */
-					case CONFIG.vendor_id_mapping.AMAZON_QC:
+					case config.vendor_id_mapping.AMAZON_QC:
 						finalResponse = await coreController.placeNewOrderAndStoreVoucher({
-							vendor_code: CONFIG.vendor_id_mapping.AMAZON_QC,
+							vendor_code: config.vendor_id_mapping.AMAZON_QC,
 							reference_id: options.reference_id,
 							options: options,
 							brand_sku: sku,
@@ -112,9 +112,9 @@ export default async function vouchersController({ voucherRequest, services, acc
 						break;
 
 					/* FLIP KART EGV */
-					case CONFIG.vendor_id_mapping.FLIPKART_EGV:
+					case config.vendor_id_mapping.FLIPKART_EGV:
 						finalResponse = await coreController.placeNewOrderAndStoreVoucher({
-							vendor_code: CONFIG.vendor_id_mapping.FLIPKART_EGV,
+							vendor_code: config.vendor_id_mapping.FLIPKART_EGV,
 							reference_id: options.reference_id,
 							options: options,
 							brand_sku: sku,
@@ -123,9 +123,9 @@ export default async function vouchersController({ voucherRequest, services, acc
 						});
 						break;
 					/* QUICK CILVER  */
-					case CONFIG.vendor_id_mapping.QUICKCILVER_EGV:
+					case config.vendor_id_mapping.QUICKCILVER_EGV:
 						finalResponse = await coreController.placeNewOrderAndStoreVoucher({
-							vendor_code: CONFIG.vendor_id_mapping.QUICKCILVER_EGV,
+							vendor_code: config.vendor_id_mapping.QUICKCILVER_EGV,
 							reference_id: options.reference_id,
 							options: options,
 							brand_sku: sku,
@@ -144,7 +144,7 @@ export default async function vouchersController({ voucherRequest, services, acc
 				return finalResponse;
 			} else {
 			
-				await new LogSys().log(`Vendor Not found, either vendor or brand or amount not mapped!!`, false, options.reference_id, vendor_code);
+				await new LogSys().log(`Vendor Not found, either vendor or brand or amount not mapped!!`, false,options.reference_id,vendor_code);
 				/* Failure Case: When No Vendors are available in the Inventory */
 				const noVendorAvailableResponse: VoucherResponse = {
 					success: false,
@@ -160,7 +160,7 @@ export default async function vouchersController({ voucherRequest, services, acc
 			}
 		} else {
 		
-			await new LogSys().log(`Either brand for the given SKU is Inactive or SKU Not Mapped with given amount'`, false, options.reference_id, vendor_code);
+			await new LogSys().log(`Either brand for the given SKU is Inactive or SKU Not Mapped with given amount'`, false,options.reference_id,vendor_code);
 			const brandInactive: VoucherResponse = {
 				success: false,
 				message: 'Either brand for the given SKU is Inactive or SKU Not Mapped with given amount',
@@ -195,5 +195,3 @@ export default async function vouchersController({ voucherRequest, services, acc
 		return exceptionResponse;
 	}
 }
-
-

@@ -88,29 +88,29 @@ const processOrder = async (jobdata: any, services: any, schema: any, accountabi
 			const order =
 				jobdata.collection == 'performing_invoice'
 					? await getDataFromCollection(
-						services,
-						{
-							id: {
-								_eq: jobdata.id,
+							services,
+							{
+								id: {
+									_eq: jobdata.id,
+								},
 							},
-						},
-						[
-							'id',
-							'original_value',
-							'total_value',
-							'total_value_cashback',
-							'cashback',
-							'date_updated',
-							'client',
-							'user_created',
-							'commerical',
-							'poc',
-						],
-						schema,
-						'performing_invoice'
-					)
+							[
+								'id',
+								'original_value',
+								'total_value',
+								'total_value_cashback',
+								'cashback',
+								'date_updated',
+								'client',
+								'user_created',
+								'commerical',
+								'poc',
+							],
+							schema,
+							'performing_invoice'
+					  )
 					: jobdata.collection == 'shakepe_orders'
-						? await getDataFromCollection(
+					? await getDataFromCollection(
 							services,
 							{
 								id: {
@@ -125,7 +125,6 @@ const processOrder = async (jobdata: any, services: any, schema: any, accountabi
 								'total_value_cashback',
 								'cashback',
 								'date_updated',
-								'date_created',
 								'user_created',
 								'client',
 								'calculation',
@@ -142,95 +141,95 @@ const processOrder = async (jobdata: any, services: any, schema: any, accountabi
 							],
 							schema,
 							'shakepe_orders'
-						)
-						: jobdata.collection == 'client_product_mapping'
-							? await getDataFromCollection(
-								services,
-								{
-									id: {
-										_eq: jobdata.data.id,
-									},
+					  )
+					: jobdata.collection == 'client_product_mapping'
+					? await getDataFromCollection(
+							services,
+							{
+								id: {
+									_eq: jobdata.data.id,
 								},
-								['id', 'credit_limt', 'date_updated', 'user_updated', 'client_id', 'user_created'],
-								schema,
-								'client_product_mapping'
-							)
-							: jobdata.collection == 'corporate_load'
-								? await getDataFromCollection(
-									services,
-									{
-										id: {
-											_eq: jobdata.id,
-										},
-									},
-									[
-										'id',
-										'amount',
-										'transaction_type',
-										'date_updated',
-										'user_created',
-										'payment_terms',
-										'client_name',
-										'poc',
-									],
-									schema,
-									'corporate_load'
-								)
-								: jobdata.collection == 'payment_verify'
-									? await getDataFromCollection(
-										services,
-										{
-											id: {
-												_eq: jobdata.id,
-											},
-										},
-										[
-											'id',
-											'corporate_load.amount',
-											'corporate_load.transaction_type',
-											'corporate_load.id',
-											'corporate_load.payment_terms',
-											'corporate_load.poc',
-											'date_updated',
-											'user_created',
-											'amount',
-											'corporate_load.client_name',
-										],
-										schema,
-										'payment_verify'
-									)
-									: jobdata.collection == 'client'
-										? await getDataFromCollection(
-											services,
-											{
-												id: {
-													_eq: jobdata.id,
-												},
-											},
-											[
-												'id',
-												'credit_limit',
-												'previous_credit_limit',
-												'credit_wallet',
-												'user_created',
-												'requested_credit_limit',
-											],
-											schema,
-											'client'
-										)
-										: jobdata.collection == 'poc_fund_transfer'
-											? await getDataFromCollection(
-												services,
-												{
-													id: {
-														_eq: jobdata.id,
-													},
-												},
-												['client', 'sender_poc.*', 'receiver_poc.*', 'amount', 'status'],
-												schema,
-												'poc_fund_transfer'
-											)
-											: null;
+							},
+							['id', 'credit_limt', 'date_updated', 'user_updated', 'client_id', 'user_created'],
+							schema,
+							'client_product_mapping'
+					  )
+					: jobdata.collection == 'corporate_load'
+					? await getDataFromCollection(
+							services,
+							{
+								id: {
+									_eq: jobdata.id,
+								},
+							},
+							[
+								'id',
+								'amount',
+								'transaction_type',
+								'date_updated',
+								'user_created',
+								'payment_terms',
+								'client_name',
+								'poc',
+							],
+							schema,
+							'corporate_load'
+					  )
+					: jobdata.collection == 'payment_verify'
+					? await getDataFromCollection(
+							services,
+							{
+								id: {
+									_eq: jobdata.id,
+								},
+							},
+							[
+								'id',
+								'corporate_load.amount',
+								'corporate_load.transaction_type',
+								'corporate_load.id',
+								'corporate_load.payment_terms',
+								'corporate_load.poc',
+								'date_updated',
+								'user_created',
+								'amount',
+								'corporate_load.client_name',
+							],
+							schema,
+							'payment_verify'
+					  )
+					: jobdata.collection == 'client'
+					? await getDataFromCollection(
+							services,
+							{
+								id: {
+									_eq: jobdata.id,
+								},
+							},
+							[
+								'id',
+								'credit_limit',
+								'previous_credit_limit',
+								'credit_wallet',
+								'user_created',
+								'requested_credit_limit',
+							],
+							schema,
+							'client'
+					  )
+					: jobdata.collection == 'poc_fund_transfer'
+					? await getDataFromCollection(
+							services,
+							{
+								id: {
+									_eq: jobdata.id,
+								},
+							},
+							['client', 'sender_poc.*', 'receiver_poc.*', 'amount', 'status'],
+							schema,
+							'poc_fund_transfer'
+					  )
+					: null;
 			if (order) {
 				const orders = { ...order[0], collection: jobdata.collection };
 				// Process each order sequentially
@@ -260,8 +259,8 @@ const processOrder = async (jobdata: any, services: any, schema: any, accountabi
 						orders.commerical === 'Cashback'
 							? orders.total_value_cashback
 							: orders.total_value
-								? orders.total_value
-								: orders.original_value
+							? orders.total_value
+							: orders.original_value
 					).toFixed(2);
 					await updateWallet(
 						orders.client,
@@ -324,8 +323,8 @@ const processOrder = async (jobdata: any, services: any, schema: any, accountabi
 						orders.commerical === 'Cashback'
 							? orders.total_value_cashback
 							: orders.total_value
-								? orders.total_value
-								: orders.original_value
+							? orders.total_value
+							: orders.original_value
 					).toFixed(2);
 
 					const walletType = coins[0].product_type.coin;
@@ -348,8 +347,8 @@ const processOrder = async (jobdata: any, services: any, schema: any, accountabi
 							orders.commerical === 'Cashback'
 								? jobdata.data.total_value_cashback
 								: jobdata.data.total_value_cashback
-									? jobdata.data.total_value
-									: jobdata.data.original_value
+								? jobdata.data.total_value
+								: jobdata.data.original_value
 						).toFixed(2);
 
 						if (amountToProcess <= pocWallet) {
@@ -430,12 +429,12 @@ const processOrder = async (jobdata: any, services: any, schema: any, accountabi
 							orders.payment == 'partial_payment_recevied'
 								? parseFloat(orders.remaining_amount).toFixed(2)
 								: parseFloat(
-									orders.commerical === 'Cashback'
-										? orders.total_value_cashback
-										: orders.total_value
+										orders.commerical === 'Cashback'
+											? orders.total_value_cashback
+											: orders.total_value
 											? orders.total_value
 											: orders.original_value
-								).toFixed(2);
+								  ).toFixed(2);
 						const poc_data = await getDataFromCollection(
 							services,
 							{
@@ -501,6 +500,7 @@ const processOrder = async (jobdata: any, services: any, schema: any, accountabi
 								schema,
 								'client'
 							);
+
 							const clientWallet = parseFloat(client_wallet_data[0].wallet);
 							await updateWallet(
 								orders.client,
@@ -788,36 +788,6 @@ const processOrder = async (jobdata: any, services: any, schema: any, accountabi
 								productType,
 								walletType
 							);
-							const santa = await fetch(process.env.SANTA_API + '?dispatch=add_products_from_zeus.ledger_credit', {
-								method: 'POST',
-								headers: {
-									'Content-Type': 'application/json',
-									Authorization: 'Bearer ' + process.env.SANTA_TOKEN,
-								},
-								body: JSON.stringify({
-									user_id: 0,
-									user_email: null,
-									user_name: 0,
-									firstname: 0,
-									lastname: 0,
-									request_id: 0,
-									company_id: 0,
-									entity_id: null,
-									siteadmin_id: 0,
-									points_type: 'A',
-									amount: totalOrderValue,
-									campaign_id: 0,
-									created_at: orders.date_created,
-									expire_date: '',
-									action: 'A',
-									reason: 'SP ' + orders.id + '/' + (orders?.po_number ?? ''),
-									reward_point_change_id: 0,
-									timestamp: 0,
-									emp_id: 0,
-									is_code: 0,
-									zeus_company_id: orders.poc,
-								}),
-							});
 							return true;
 						} else {
 							await updateCoins(
@@ -1158,9 +1128,8 @@ const processOrder = async (jobdata: any, services: any, schema: any, accountabi
 						);
 					}
 				} else if (orders.collection == 'client' && jobdata.data.credit_limit_status == 'approved') {
-					const amountToProcess = parseFloat(orders?.requested_credit_limit - orders?.credit_limit).toFixed(2);
+					const amountToProcess = parseFloat(orders?.requested_credit_limit - orders?.previous_credit_limit).toFixed(2);
 					const clientCreditWallet = parseFloat(isNaN(orders.credit_wallet) ? 0 : orders.credit_wallet);
-					const creditLimit = parseFloat(isNaN(orders.credit_limit) ? 0 : orders.credit_limit);
 					await updateWallet(
 						orders.id,
 						null,
@@ -1170,10 +1139,11 @@ const processOrder = async (jobdata: any, services: any, schema: any, accountabi
 						null,
 						'credit_wallet',
 						amountToProcess,
-						orders?.credit_wallet,
+						clientCreditWallet,
 						orders.user_created,
 						null
 					);
+
 					return {
 						credit_limit: orders?.requested_credit_limit,
 					};
@@ -1273,8 +1243,8 @@ const processOrder = async (jobdata: any, services: any, schema: any, accountabi
 					orders.commerical == 'Cashback'
 						? orders.total_value_cashback
 						: orders.total_value
-							? orders.total_value
-							: orders.original_value
+						? orders.total_value
+						: orders.original_value
 				).toFixed(2);
 
 				const totalOrderValue = parseFloat(
@@ -1417,20 +1387,20 @@ const processOrder = async (jobdata: any, services: any, schema: any, accountabi
 						const coinsCredit =
 							productType != 'ShakePe Points'
 								? await updateCoins(
-									services,
-									schema,
-									'credit',
-									coinsWallet,
-									totalOrderValue,
-									orders.user_created,
-									orders.poc,
-									'cpp',
-									orders.client,
-									'shakepe_orders',
-									null,
-									productType,
-									walletType
-								)
+										services,
+										schema,
+										'credit',
+										coinsWallet,
+										totalOrderValue,
+										orders.user_created,
+										orders.poc,
+										'cpp',
+										orders.client,
+										'shakepe_orders',
+										null,
+										productType,
+										walletType
+								  )
 								: null;
 
 						return {
@@ -1468,20 +1438,20 @@ const processOrder = async (jobdata: any, services: any, schema: any, accountabi
 						const coinsCredit =
 							productType != 'ShakePe Points'
 								? await updateCoins(
-									services,
-									schema,
-									'credit',
-									coinsWallet,
-									totalOrderValue,
-									orders.user_created,
-									orders.poc,
-									'cpp',
-									orders.client,
-									'shakepe_orders',
-									null,
-									productType,
-									walletType
-								)
+										services,
+										schema,
+										'credit',
+										coinsWallet,
+										totalOrderValue,
+										orders.user_created,
+										orders.poc,
+										'cpp',
+										orders.client,
+										'shakepe_orders',
+										null,
+										productType,
+										walletType
+								  )
 								: null;
 						await updateOneNoEmit(
 							{
@@ -1546,17 +1516,17 @@ const processOrder = async (jobdata: any, services: any, schema: any, accountabi
 							status: orders.calculation.includes('Previous')
 								? 'Approval Pending'
 								: orders.modified_credit_days && orders.actual_credit_days < orders.credit_days
-									? 'Approval Pending'
-									: amountToProcess > clientCreditWallet
-										? 'Approval Pending'
-										: 'Order Open',
+								? 'Approval Pending'
+								: amountToProcess > clientCreditWallet
+								? 'Approval Pending'
+								: 'Order Open',
 							approval_status: orders.calculation.includes('Previous')
 								? 'Pending'
 								: orders.modified_credit_days && orders.actual_credit_days < orders.credit_days
-									? 'Pending'
-									: amountToProcess > clientCreditWallet
-										? 'Pending'
-										: null,
+								? 'Pending'
+								: amountToProcess > clientCreditWallet
+								? 'Pending'
+								: null,
 							changes: amountToProcess > clientCreditWallet ? 'exceceed_limit' : null,
 							consume_status: 'not_consumed',
 						};
@@ -1586,20 +1556,20 @@ const processOrder = async (jobdata: any, services: any, schema: any, accountabi
 						const coinsCredit =
 							productType != 'ShakePe Points'
 								? await updateCoins(
-									services,
-									schema,
-									'credit',
-									coinsWallet,
-									totalOrderValue,
-									orders.user_created,
-									orders.poc,
-									'cpp',
-									orders.client,
-									'shakepe_orders',
-									null,
-									productType,
-									walletType
-								)
+										services,
+										schema,
+										'credit',
+										coinsWallet,
+										totalOrderValue,
+										orders.user_created,
+										orders.poc,
+										'cpp',
+										orders.client,
+										'shakepe_orders',
+										null,
+										productType,
+										walletType
+								  )
 								: null;
 						const pocDebit = await pocUpdateWallet(
 							services,
@@ -1694,17 +1664,17 @@ const processOrder = async (jobdata: any, services: any, schema: any, accountabi
 							status: orders.calculation.includes('Previous')
 								? 'Approval Pending'
 								: orders.modified_credit_days && orders.actual_credit_days < orders.credit_days
-									? 'Approval Pending'
-									: remainingAmount > clientCreditWallet
-										? 'Approval Pending'
-										: 'Order Open',
+								? 'Approval Pending'
+								: remainingAmount > clientCreditWallet
+								? 'Approval Pending'
+								: 'Order Open',
 							approval_status: orders.calculation.includes('Previous')
 								? 'Pending'
 								: orders.modified_credit_days && orders.actual_credit_days < orders.credit_days
-									? 'Pending'
-									: remainingAmount > clientCreditWallet
-										? 'Pending'
-										: null,
+								? 'Pending'
+								: remainingAmount > clientCreditWallet
+								? 'Pending'
+								: null,
 							remaining_amount: remainingAmount,
 							payment_received: pocWallet,
 							changes: remainingAmount > clientCreditWallet ? 'exceceed_limit' : null,
@@ -1758,8 +1728,8 @@ const processOrder = async (jobdata: any, services: any, schema: any, accountabi
 					orders.commerical === 'Cashback'
 						? orders.total_value_cashback
 						: orders.total_value
-							? orders.total_value
-							: orders.original_value
+						? orders.total_value
+						: orders.original_value
 				).toFixed(2);
 				if (amountToProcess <= clientWallet && amountToProcess <= pocWallet) {
 					const ledger = await updateWallet(
@@ -1805,37 +1775,23 @@ const processOrder = async (jobdata: any, services: any, schema: any, accountabi
 						productType,
 						walletType
 					);
-
-					// Debit amount only for active campaigns
-					let coinsdebit;
-					const skipDebit = jobdata.data.type === 'DIY' && orders.status === 'Order Open';
-					if (!skipDebit) {
-						coinsdebit = await updateCoins(
-							services,
-							schema,
-							'debit',
-							coinsWallet + totalOrderValue,
-							totalOrderValue,
-							orders.user_created,
-							orders.poc,
-							'diy',
-							orders.client,
-							'shakepe_orders',
-							null,
-							productType,
-							walletType
-						);
-					}
-
-					let transaction_create;
-
-					if (coinsdebit === 0 || coinsdebit == null || coinsdebit == undefined) {
-						transaction_create = [ledger, coinsCredit, pocDebitWallet];
-					} else {
-						transaction_create = [ledger, coinsdebit, coinsCredit, pocDebitWallet];
-					}
+					const coinsdebit = await updateCoins(
+						services,
+						schema,
+						'debit',
+						coinsWallet + totalOrderValue,
+						totalOrderValue,
+						orders.user_created,
+						orders.poc,
+						'diy',
+						orders.client,
+						'shakepe_orders',
+						null,
+						productType,
+						walletType
+					);
 					return {
-						transaction_create,
+						transaction_create: [ledger, coinsdebit, coinsCredit, pocDebitWallet],
 						payment: 'Payment Received',
 					};
 				} else {
@@ -1856,8 +1812,8 @@ const processOrder = async (jobdata: any, services: any, schema: any, accountabi
 					orders.commerical === 'Cashback'
 						? orders.total_value_cashback
 						: orders.total_value
-							? orders.total_value
-							: orders.original_value
+						? orders.total_value
+						: orders.original_value
 				).toFixed(2);
 				const productType = coins[0].product_type.product_types;
 				const walletType = coins[0].product_type.coin;
@@ -2202,8 +2158,8 @@ const processOrder = async (jobdata: any, services: any, schema: any, accountabi
 							orders.type_of_transfer == 7
 								? parseFloat(pocPoints[0]?.shakepe_points_coins)
 								: orders.type_of_transfer == 8
-									? parseFloat(pocPoints[0]?.shakepe_codes_coins)
-									: parseFloat(pocPoints[0]?.links_coins);
+								? parseFloat(pocPoints[0]?.shakepe_codes_coins)
+								: parseFloat(pocPoints[0]?.links_coins);
 
 						if (pointsCoins >= orders.amount) {
 							if (shakePeOrder.length != 0) {
@@ -2211,27 +2167,27 @@ const processOrder = async (jobdata: any, services: any, schema: any, accountabi
 								const remaining =
 									consumed.remainingBalance != 0
 										? await updateCoins(
-											services,
-											schema,
-											'debit',
-											pointsCoins,
-											consumed.remainingBalance,
-											orders.user_created,
-											orders.poc,
-											'cpp',
-											orders.client,
-											'poc_wallet_transfer',
-											null,
-											walletType,
-											walletCoins
-										)
+												services,
+												schema,
+												'debit',
+												pointsCoins,
+												consumed.remainingBalance,
+												orders.user_created,
+												orders.poc,
+												'cpp',
+												orders.client,
+												'poc_wallet_transfer',
+												null,
+												walletType,
+												walletCoins
+										  )
 										: null;
 
 								remaining
 									? cpp_ledger.update.push({
-										transfer_poc: '+',
-										id: remaining,
-									})
+											transfer_poc: '+',
+											id: remaining,
+									  })
 									: '';
 
 								const pointsLegeder = await Promise.all(
@@ -2445,12 +2401,13 @@ const updateWallet = async (
 ) => {
 	const amountToProcess =
 		type == 'credit' ? parseFloat(balance) + parseFloat(amount) : parseFloat(balance) - parseFloat(amount);
+
 	await updateOneNoEmit(
 		wallet_type == 'outstanding_wallet'
 			? { outstanding_wallet: amountToProcess }
 			: wallet_type == 'credit_wallet'
-				? { credit_wallet: amountToProcess }
-				: { wallet: amountToProcess },
+			? { credit_wallet: amountToProcess }
+			: { wallet: amountToProcess },
 		'client',
 		services,
 		clientId,

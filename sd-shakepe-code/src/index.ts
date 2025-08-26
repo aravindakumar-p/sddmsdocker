@@ -1,15 +1,6 @@
 import { defineHook } from '@directus/extensions-sdk';
 import constant from './constant.json';
-import {
-	updateOne,
-	updateBatch,
-	logGenerator,
-	mail,
-	createMany,
-	createOne,
-	updateOneNoEmit,
-	deleteMany,
-} from './db/setter';
+import { updateOne, updateBatch, logGenerator, mail, createMany, createOne } from './db/setter';
 import { env } from 'process';
 import { getDataFromCollection, assetServices } from './db/getter';
 import * as amqp from 'amqplib';
@@ -584,7 +575,7 @@ export default defineHook(async ({ filter, action }, { services, exceptions, dat
 				} else {
 					logGenerator(
 						{
-							shake_pe_order: shakepeOrder[0].id,
+							shakepe_order: shakepeOrder[0].id,
 							checking_length: false,
 							inventory_length: codesInventory?.length,
 							order_length: gettingValues?.total_codes,
@@ -696,7 +687,7 @@ export default defineHook(async ({ filter, action }, { services, exceptions, dat
 
 					logGenerator(
 						{
-							shake_pe_order: shakepeOrder[0].id,
+							shakepe_order: shakepeOrder[0].id,
 							checking_length: true,
 							inventory_length: codesInventory?.length,
 							order_length: gettingValues?.total_codes,
@@ -818,6 +809,7 @@ export default defineHook(async ({ filter, action }, { services, exceptions, dat
 							data: enterpriseAmountCheck.data,
 						};
 					}
+					throw new InvalidPayloadException(constant.error.insufficient_qty);
 				} else {
 					logGenerator(
 						{
@@ -861,21 +853,21 @@ export default defineHook(async ({ filter, action }, { services, exceptions, dat
 					shakepe_codes_orders:
 						codes?.shakepe_codes_orders?.length > 0
 							? codes?.shakepe_codes_orders?.map((codeData: any) => {
-								return {
-									...codeData,
-									sd_codes:
-										codeData?.sd_codes?.length > 0
-											? codeData?.sd_codes?.map((code: any) => {
-												return {
-													...code,
-													code: code?.code
-														? maskString(code.code, env.MASK_FRONT, env.MASK_BACK, env.MASK_CHARACTER)
-														: '',
-												};
-											})
-											: [],
-								};
-							})
+									return {
+										...codeData,
+										sd_codes:
+											codeData?.sd_codes?.length > 0
+												? codeData?.sd_codes?.map((code: any) => {
+														return {
+															...code,
+															code: code?.code
+																? maskString(code.code, env.MASK_FRONT, env.MASK_BACK, env.MASK_CHARACTER)
+																: '',
+														};
+												  })
+												: [],
+									};
+							  })
 							: [],
 				};
 			});
@@ -1102,18 +1094,18 @@ export default defineHook(async ({ filter, action }, { services, exceptions, dat
 							const files =
 								codeOrdered[0]?.printer?.file_upload?.length > 0
 									? await Promise.all(
-										codeOrdered[0]?.printer?.file_upload?.map(async (files: any) => {
-											return {
-												content: await assetServices(
-													files.directus_files_id.id,
-													services,
-													schema,
-													context.accountability
-												),
-												filename: files.directus_files_id.filename_download,
-											};
-										})
-									)
+											codeOrdered[0]?.printer?.file_upload?.map(async (files: any) => {
+												return {
+													content: await assetServices(
+														files.directus_files_id.id,
+														services,
+														schema,
+														context.accountability
+													),
+													filename: files.directus_files_id.filename_download,
+												};
+											})
+									  )
 									: [];
 							const newCodes = await codeCreation(
 								codeOrdered[0].prefix,
@@ -1181,13 +1173,13 @@ export default defineHook(async ({ filter, action }, { services, exceptions, dat
 				const files =
 					codeOrdered[0]?.printer?.file_upload?.length > 0
 						? await Promise.all(
-							codeOrdered[0]?.printer?.file_upload?.map(async (files: any) => {
-								return {
-									content: await assetServices(files.directus_files_id.id, services, schema, context.accountability),
-									filename: files.directus_files_id.filename_download,
-								};
-							})
-						)
+								codeOrdered[0]?.printer?.file_upload?.map(async (files: any) => {
+									return {
+										content: await assetServices(files.directus_files_id.id, services, schema, context.accountability),
+										filename: files.directus_files_id.filename_download,
+									};
+								})
+						  )
 						: [];
 				const codes = await getDataFromCollection(
 					services,
@@ -1679,73 +1671,6 @@ export default defineHook(async ({ filter, action }, { services, exceptions, dat
 				});
 		}
 	});
-	action('sd_brand_details.items.create', async ({ payload, key, collection }, context: any) => {
-		updation(key, payload.enterprise_type, services, schema, context);
-	});
-
-	action('sd_brand_details.items.update', async (payload: any, context: any) => {
-		payload.keys.map((key: any) => {
-			updation(key, payload.payload.enterprise_type, services, schema, context);
-		});
-	});
-
-	const updation = async (key: any, find: any, services: any, schema: any, context: any) => {
-		if (find == 'default') {
-			// Get all brand IDs
-			const brandids = await getDataFromCollection(services, {}, ['id'], -1, schema, 'sd_brand_details');
-			// Get all client IDs
-			const clientids = await getDataFromCollection(services, {}, ['id'], -1, schema, 'client');
-			await Promise.all(
-				brandids.map(async (brandid: any) => {
-					const patch = {
-						enterprise_clients: {
-							create: clientids.map((client: any) => ({
-								sd_brand_details_id: brandid.id,
-								client_id: { id: client.id },
-							})),
-							update: [],
-							delete: [],
-						},
-					};
-					await updateOneNoEmit(patch, 'sd_brand_details', services, brandid.id, schema, {
-						admin: true,
-					});
-				})
-			);
-		} else if (find == 'not_default') {
-			// Fix: filter by sd_brand_details_id, not client_id
-			
-			const joinRecords = await getDataFromCollection(
-				services,
-				{
-					sd_brand_details_id: { _eq: key },
-				},
-				['id', 'client_approval_status'],
-				-1,
-				schema,
-				'sd_brand_details_client'
-			);
-
-			const nonApprovedRecords = joinRecords.filter(
-				(rec: any) => rec.client_approval_status !== 'approved'
-			);
-
-			if (nonApprovedRecords.length > 0) {
-				deleteMany(
-					nonApprovedRecords.map((rec: any) => rec.id),
-					'sd_brand_details_client',
-					services,
-					schema,
-					{
-						admin: true,
-						user: context?.accountability?.user,
-					}
-				);
-			}
-		} else if (!find) {
-			return;
-		}
-	};
 
 	const rabbitMq = async (
 		orderDetails: any,
@@ -1782,17 +1707,17 @@ export default defineHook(async ({ filter, action }, { services, exceptions, dat
 			codes_info:
 				form_factor == constant.shakepe_orders.virtual
 					? orderDetails.shakepe_codes_orders?.map((codeDetails: any, index: any) => {
-						return {
-							id: codeDetails.id,
-							valid_till: codeDetails.validity,
-							activation_date: codeDetails.activation,
-							denomination: parseInt(codeDetails.value_of_code),
-							no_of_codes: codeDetails.total_no_of_codes,
-							codes_data: codesInventory[index],
-						};
-					})
+							return {
+								id: codeDetails.id,
+								valid_till: codeDetails.validity,
+								activation_date: codeDetails.activation,
+								denomination: parseInt(codeDetails.value_of_code),
+								no_of_codes: codeDetails.total_no_of_codes,
+								codes_data: codesInventory[index],
+							};
+					  })
 					: form_factor == 'data'
-						? orderDetails.shakepe_codes_orders?.map((codeDetails: any) => {
+					? orderDetails.shakepe_codes_orders?.map((codeDetails: any) => {
 							return {
 								id: codeDetails.id,
 								valid_till: codeDetails.validity,
@@ -1819,8 +1744,8 @@ export default defineHook(async ({ filter, action }, { services, exceptions, dat
 									})
 									.filter((code: any) => code != null),
 							};
-						})
-						: orderDetails.shakepe_codes_orders?.map((codeDetails: any) => {
+					  })
+					: orderDetails.shakepe_codes_orders?.map((codeDetails: any) => {
 							return {
 								id: codeDetails.id,
 								valid_till: codeDetails.validity,
@@ -1835,7 +1760,7 @@ export default defineHook(async ({ filter, action }, { services, exceptions, dat
 									};
 								}),
 							};
-						}),
+					  }),
 		};
 
 		logGenerator(

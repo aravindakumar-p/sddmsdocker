@@ -1,5 +1,5 @@
 import Setters from '../db/setters';
-import { CONFIG } from '../config';
+import { logging_system } from '../config.json';
 
 let logger:any = null;
 /**
@@ -19,7 +19,8 @@ class Logger {
 
 	log = async (collection_name:any, error:any, addPrepend:any, referenceId:any, vendor_code:any) => {
 		if (addPrepend == null) addPrepend = true;
-		const set = new Setters(this.itemsService, this.accountabilitySchema);;
+		const set = new Setters(this.itemsService, this.accountabilitySchema);
+
 		await set.addLog(
 			collection_name,
 			JSON.stringify({
@@ -48,21 +49,21 @@ export default class LogSys {
 	};
 
 	log = async (error:any, dontPrepend:any, referenceId:any,vendor_code:any) => {
-		if (CONFIG.logging_system.save_normal_logs) {
+		if (logging_system.save_normal_logs) {
 			logger.log(null, error, dontPrepend, referenceId,vendor_code);
 		}
 	};
 
 	error = async (error:any,referenceId:any,vendor_code:any) => {
 
-		if (CONFIG.logging_system.save_error_logs) {
+		if (logging_system.save_error_logs) {
 			logger.log(null, error,referenceId,vendor_code);
 		}
 	};
 
 	jsonError = async (error:any,referenceId:any,vendor_code:any) => {
 
-		if (CONFIG.logging_system.save_error_logs) {
+		if (logging_system.save_error_logs) {
 			await logger.log(null, JSON.stringify(error),JSON.stringify(error.exception),referenceId,vendor_code);
 		}
 	};

@@ -29,9 +29,7 @@
         "revoked" : "Revoking of all card is Successful " ,
         "invaildpayload" : "Invaild Payload",
         "invaildCredentials" : "Invalid user credentials.",
-        "order_id_notexit" : "Order ID is not there",
-        "client_id_not_exist" : "client_id is required",
-        "internal_server_error" : "Internal Server Error"
+        "order_id_notexit" : "Order ID is not there"
     },
     "codes" : "ShakePe Codes",
     "code_error" : {
@@ -48,15 +46,6 @@
         "fully_redeemed" : "fully redeemed",
         "disabled" : "disabled"
     } ,
-    "enterprise_type" : {
-        "enterprise_type_default" : "default",
-        "enterprise_type_not_default" : "not_default"
-    },
-    "brand_approval_status" : {
-        "brand_approval_status_pending" : "pending",
-        "brand_approval_status_approved" : "approved",
-        "brand_approval_status_declined" : "declined"
-    },
     "santa" : {
         "partially_redeemed" :"partially_Redeemed",
         "code_single_status" : "code_single_status",

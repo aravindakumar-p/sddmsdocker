@@ -16,7 +16,7 @@ export const mail = async (payload: any, mailService: any, schema: any, accounta
 			},
 			attachments: attachments ? attachments : null,
 		});
-
+		
 		createOne(
 			services,
 			'email_logs',
@@ -103,22 +103,6 @@ export const updateOne = async (
 	await createOneService.updateOne(primary, payload);
 };
 
-export const updateOneNoEmit = async (
-	payload: any,
-	collection: any,
-	services: any,
-	primary: any,
-	schema: any,
-	accountability: any
-) => {
-	const { ItemsService } = services;
-	const createOneService = new ItemsService(collection, {
-		schema: schema,
-		accountability: accountability ?? { admin: true },
-	});
-	return await createOneService.updateOne(primary, payload, { emitEvents: false });
-};
-
 export const updateMany = async (
 	payload: any,
 	collection: any,
@@ -158,16 +142,5 @@ export const createMany = async (payload: any, collection: any, services: any, s
 			accountability: accountability ?? { admin: true },
 		});
 		await createOneService.createMany(payload);
-	} catch (error) {}
-};
-
-export const deleteMany = async (ids: any, collection: any, services: any, schema: any, accountability: any) => {
-	try {
-		const { ItemsService } = services;
-		const deleteManyService = new ItemsService(collection, {
-			schema: schema,
-			accountability: accountability ?? { admin: true },
-		});
-		await deleteManyService.deleteMany(ids);
 	} catch (error) {}
 };

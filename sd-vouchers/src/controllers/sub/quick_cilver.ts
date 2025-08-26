@@ -2,7 +2,7 @@ import LogSys from '../../helpers/logger';
 import VendorVouchers from '../../vendors';
 import Getters from '../../db/getters';
 import Setters from '../../db/setters';
-import { CONFIG } from '../../config';
+import config from '../../config.json';
 
 /**
  * QC Amazon Controller Class:
@@ -38,11 +38,11 @@ export default class QucikCilverController {
 				brand_sku,
 				amount,
 				currency,
-				CONFIG.vendor_id_mapping.QUICKCILVER_EGV,reference_id,vendor_code
+				config.vendor_id_mapping.QUICKCILVER_EGV,reference_id,vendor_code
 			);
 
 
-			const vendorSkuMappingResponse = await get.mappedVendorActiveBrandSKU(brand_sku, CONFIG.vendor_id_mapping.QUICKCILVER_EGV,reference_id);
+			const vendorSkuMappingResponse = await get.mappedVendorActiveBrandSKU(brand_sku, config.vendor_id_mapping.QUICKCILVER_EGV,reference_id);
 			if (
 				amount &&
 				currency &&
@@ -170,9 +170,8 @@ export default class QucikCilverController {
 
 			const amount = brandDetails ? brandDetails['amount'] : null;
 			const currency = brandDetails ? brandDetails['currency'] : null;
-			const brand_name = brandDetails?.brand?.brand_name ?? null;
 
-			const vendorDetails = await get.getVendorFromVendorCode(CONFIG.vendor_id_mapping.QUICKCILVER_EGV,reference_id);
+			const vendorDetails = await get.getVendorFromVendorCode(config.vendor_id_mapping.QUICKCILVER_EGV,reference_id);
 			const vendorId = vendorDetails ? vendorDetails['id'] : null;
 
 			/* Redeemed TRUE/FALSE to set in Giftcard inventory */
@@ -220,7 +219,6 @@ export default class QucikCilverController {
                         reference_code_otp: reference_code_otp,
 						soft_link_order_id: options.soft_link_order_id || '',
 						link_ledger_reference_id:link_reference_id ? options.reference_id : '',
-						brand_name:brand_name,
                         ...extra,
                     };
 
