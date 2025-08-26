@@ -296,7 +296,7 @@ export default defineHook(async ({ filter, action }, { services, exceptions, dat
 						...job_vouchers,
 					};
 				case links:
-					if (data?.generic_links_details?.create) {
+					if (data?.generic_links_details?.create?.length > 0) {
 						let subTotal = 0;
 						let itemDiscount = 0;
 						let itemOrderDiscount = 0;
@@ -343,7 +343,7 @@ export default defineHook(async ({ filter, action }, { services, exceptions, dat
 							...generic_links_final,
 							...job_generic,
 						};
-					} else if (data?.catalog_links_orders?.create) {
+					} else if (data?.catalog_links_orders?.create?.length > 0) {
 						let subTotal = 0;
 						let itemDiscount = 0;
 						let itemOrderDiscount = 0;

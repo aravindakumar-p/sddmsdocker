@@ -11,6 +11,61 @@ import { toArray } from 'lodash';
 export default defineEndpoint(async (router, { services, getSchema, database }) => {
 	const schema = await getSchema();
 
+	const authMiddleware = async (req: any, res: any, next: any) => {
+		if (req.token) {
+			const user = await database
+				.select('directus_users.id', 'directus_users.role', 'directus_roles.admin_access', 'directus_roles.app_access')
+				.from('directus_users')
+				.leftJoin('directus_roles', 'directus_users.role', 'directus_roles.id')
+				.where({
+					'directus_users.token': req.token,
+					status: 'active',
+				})
+				.first();
+			logGenerator(
+				{
+					user: user,
+				},
+				constant.log_type.log,
+				constant.collection_name.santa_log,
+				schema,
+				{
+					admin: true,
+				},
+				services
+			);
+			if (!user.role && !user.admin_access && !user.app_access) {
+				res.status(401).send({
+					errors: [
+						{
+							message: constant.messages.invaildCredentials,
+							extensions: {
+								code: constant.code_error.INVALID_CREDENTIALS,
+							},
+						},
+					],
+				});
+			} else {
+				req.accountability.user = user.id;
+				req.accountability.role = user.role;
+				req.accountability.admin = user.admin_access === true || user.admin_access == 1;
+				req.accountability.app = user.app_access === true || user.app_access == 1;
+				next();
+			}
+		} else {
+			res.status(401).send({
+				errors: [
+					{
+						message: constant.messages.invaildCredentials,
+						extensions: {
+							code: constant.code_error.INVALID_CREDENTIALS,
+						},
+					},
+				],
+			});
+		}
+	};
+
 	router.get('/consumerup', (req: any, res: any) => {
 		checkAndCreateConsumer();
 		checkCreateConsumer();
@@ -97,6 +152,69 @@ export default defineEndpoint(async (router, { services, getSchema, database }) 
 			});
 		}
 	});
+	// Provides Brand Details for Enterprise
+	router.post('/client-brand-details', authMiddleware, async (req: any, res: any) => {
+		try {
+			const { client_id } = req.body;
+			console.log('Received client_id:', client_id);
+
+			if (!client_id) {
+				console.log('client_id not provided');
+				return res.status(400).json({ message: constant.messages.client_id_not_exist });
+			}
+			const { ItemsService } = services;
+			const brandDetailsService = new ItemsService('client_sd_brand_details', { schema });
+			console.log('brandDetailsService initialized');
+			console.log("check console log")
+			const result = await brandDetailsService.readByQuery({
+				filter: {
+					_and: [
+						{ client_id: { _eq: client_id } },
+						{
+							_or: [
+								{
+									sd_brand_details_id:
+									{
+										enterprise_type:
+										{
+											_eq: constant.enterprise_type.enterprise_type_default
+										}
+									}
+								},
+								{
+									brand_approval_status:
+									{
+										_eq: constant.brand_approval_status.brand_approval_status_approved
+									}
+								}
+							]
+						}
+					]
+				},
+				fields: [
+					'sd_brand_details_id.id',
+					'sd_brand_details_id.brand_name',
+					'sd_brand_details_id.brand_sku'
+				]
+			});
+			console.log('Query result:', result);
+
+			const sdBrandDetails = Array.isArray(result)
+				? result.map((item: any) => item.sd_brand_details_id)
+				: [];
+			console.log('sdBrandDetails:', sdBrandDetails);
+
+			return res.status(200).json(sdBrandDetails);
+		} catch (error) {
+			console.log("Error occurred while fetching client brand details", error);
+			console.error('Internal server error in /client-brand-details:', error);
+			console.log('Request body:', req.body);
+			console.log('Schema:', schema);
+			console.log('Services:', services);
+			return res.status(500).json({ message: constant.messages.internal_server_error, error });
+		}
+	});
+
 	async function checkAndCreateConsumer() {
 		try {
 			const response = await axios.get(

@@ -5,7 +5,7 @@ import helpers from '../../helpers/common';
 import { Voucher, VoucherResponse } from '../../models/common';
 import Getters from '../../db/getters';
 import Setters from '../../db/setters';
-import config from '../../config.json';
+import { CONFIG } from '../../config';
 
 /**
  * WorkAdvantage Details Class:
@@ -124,8 +124,9 @@ export default class WorkAdvantageDetails {
 
 			const amount = brandDetails ? brandDetails['amount'] : null;
 			const currency = brandDetails ? brandDetails['currency'] : null;
+			const brand_name = brandDetails?.brand?.brand_name ?? null;
 
-			const vendorDetails = await get.getVendorFromVendorCode(config.vendor_id_mapping.WORK_ADVANTAGE,reference_id);
+			const vendorDetails = await get.getVendorFromVendorCode(CONFIG.vendor_id_mapping.WORK_ADVANTAGE,reference_id);
 			const vendorId = vendorDetails ? vendorDetails['id'] : null;
 
 			/* Redeemed TRUE/FALSE to set in Giftcard inventory */
@@ -174,6 +175,7 @@ export default class WorkAdvantageDetails {
                         reference_code_otp: reference_code_otp,
 						soft_link_order_id: options.soft_link_order_id || '',
 						link_ledger_reference_id:link_reference_id ? options.reference_id : '',
+						brand_name:brand_name,
                         ...extra,
                     };
 

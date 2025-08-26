@@ -148,7 +148,6 @@ export default defineEndpoint(async (router, { services, getSchema, database }) 
 						diy_status: email[0].client_id.diy_status,
 						decline_comments: email[0].client_id.comments,
 					};
-
 					logGenerator(
 						{
 							data: data,
@@ -206,6 +205,7 @@ export default defineEndpoint(async (router, { services, getSchema, database }) 
 				services
 			);
 			const { poc, limit, page } = req.query;
+
 			if (poc && limit && page) {
 				const { ItemsService } = services;
 				const collectionData = new ItemsService('cpp_ledger', { schema: schema, accountability: { admin: true } });
@@ -213,6 +213,9 @@ export default defineEndpoint(async (router, { services, getSchema, database }) 
 					filter: {
 						poc_id: {
 							_eq: poc,
+						},
+						wallet_type: {
+							_in: ['wallet', 'poc_wallet'],
 						},
 					},
 					fields: [
@@ -230,16 +233,19 @@ export default defineEndpoint(async (router, { services, getSchema, database }) 
 						'load_id.id',
 						'load_id.utr',
 						'load_id.payment_mode',
+						'wallet_type'
 					],
 					limit: parseInt(limit),
 					page: page,
 					sort: ['-date_created'],
 				});
-
 				const count = await collectionData.readByQuery({
 					filter: {
 						poc_id: {
 							_eq: poc,
+						},
+						wallet_type: {
+							_in: ['wallet', 'poc_wallet'],
 						},
 					},
 					aggregate: {
@@ -286,8 +292,12 @@ export default defineEndpoint(async (router, { services, getSchema, database }) 
 			res.status(400).send({ errorMessage: 'Something Went Wrong', error: error });
 		}
 	});
+	// Create Order
 	router.post('/orders', authMiddleware, async (req: any, res: any) => {
 		try {
+			// Add validations for required data and throw error if required data is not in request body
+			const { clientId, poc, productType, totalAmount, campaign, campaignStatus, catalogData } = req.body;
+
 			logGenerator(
 				{
 					body: req.body,
@@ -298,120 +308,187 @@ export default defineEndpoint(async (router, { services, getSchema, database }) 
 				constant.collection_name.diy_log,
 				schema,
 				{
-					admin: true,
+					admin: true
 				},
 				services
 			);
-			const { clientId, productType, denomination, totalNoLinks, totalAmount, campaign } = req.body;
-			if (clientId && productType && denomination && totalNoLinks && totalAmount && campaign) {
+
+			// Validate the required data
+			if (clientId && poc && productType && totalAmount && campaign && campaignStatus && Array.isArray(catalogData) && catalogData.length > 0) {
 				const client = await getDataFromCollection(
 					services,
 					{
 						_and: [
 							{
-								client_id: {
-									_eq: req.body.clientId,
-								},
-							},
-							{
-								product_type: {
-									_eq: req.body.productType,
-								},
-							},
+								id:
+								{
+									_eq: clientId
+								}
+							}
 						],
 					},
-					['id', 'discount'],
+					['id', 'client_address_details', 'product_type_mapping.id', 'product_type_mapping.product_type', 'product_type_mapping.discount', 'product_type_mapping.product', 'client_product_mapping.validity_of_code'],
+					1,
+					schema,
+					'client'
+				);
+
+				const client_codes = await getDataFromCollection(
+					services,
+					{
+						_and: [
+							{
+								client_id:
+								{
+									_eq: clientId
+								}
+							},
+							{
+								product_type:
+								{
+									_eq: productType
+								}
+							}
+						]
+					},
+					['id', 'product_type', 'validity_of_codes'],
 					1,
 					schema,
 					'client_product_mapping'
 				);
 
-				const order = await createOne(
+				const productDetails = client[0]?.product_type_mapping.find((val: { product_type: number; }) => val.product_type === productType);
+
+				const validity = client_codes[0]?.validity_of_codes;
+
+				if (!productDetails) {
+					return res.status(400).send({ errorMessage: 'Given ProductType is not matching' });
+				}
+
+				// Check if order already exists for this campaign
+				const existingOrder = await getDataFromCollection(
 					services,
-					'shakepe_orders',
 					{
-						client: req.body.clientId,
-						product_type: client[0].id,
-						poc: req.body.poc,
-						commerical: 'Upfront',
-						discount: client[0]?.discount,
-						filtering_with_product_type: 'Links',
-						link_type: 'Catalogue',
-						catalog_links_orders: {
-							create: [
-								{
-									denomination: req.body.denomination,
-									total_no_links: req.body.totalNoLinks,
-								},
-							],
-							update: [],
-							delete: [],
-						},
-						total_order_value: parseFloat(req.body.totalAmount),
-						original_value: parseFloat(req.body.totalAmount - (req.body.totalAmount * client[0]?.discount) / 100),
-						type: 'DIY',
-						payment: 'Payment Received',
-						status: 'Order Completed',
-						campaign_id: req.body.campaign,
-						payment_terms: 'Advance',
+						campaignID:
+						{
+							_eq: campaign
+						}
 					},
+					['id'],
+					1,
 					schema,
-					{ admin: true }
+					'shakepe_orders'
 				);
+				if (existingOrder.length > 0) {
+					return res.status(409).send({
+						message: 'Order already exists for this campaign',
+						existingOrderId: existingOrder[0].id
+					});
+				}
+
+				const { catalogData } = req.body;
+				// construct Order payload obj 
+				const orderPayload: any = {
+					client: clientId,
+					product_type: productDetails.id,
+					poc: req.body.poc,
+					commerical: 'Upfront',
+					discount: productDetails.discount,
+					filtering_with_product_type: productDetails.product,
+					link_type: 'Catalogue',
+					total_order_value: parseFloat(totalAmount),
+					original_value: parseFloat(totalAmount - (totalAmount * productDetails.discount) / 100),
+					type: 'DIY',
+					payment: 'Payment Received',
+					campaignID: campaign,
+					payment_terms: 'Advance'
+				}
+				if (productDetails.product === constant.product_type.LINKS) {
+					orderPayload.catalog_links_orders = {
+						create: catalogData.map(item => ({
+							denomination: item.denomination,
+							total_no_links: item.totalNoLinks,
+						})),
+						update: [],
+						delete: []
+					}
+				}
+				else if (productDetails.product === constant.product_type.CODES) {
+					orderPayload.select_address = client[0]?.client_address_details?.[0];
+					orderPayload.validity_of_code = validity;
+					orderPayload.shakepe_codes_orders = {
+						create: catalogData.map(item => ({
+							value_of_code: item.valueOfCode,
+							total_no_of_codes: item.totalNoCodes,
+							activation: item.activationDate,
+							validity: item.validTill
+
+						})),
+						update: [],
+						delete: []
+					}
+				}
+
+				let order = null;
+
+				if (campaignStatus === 'scheduled') {
+					orderPayload.status = constant.status.ORDER_OPEN;
+					order = await createOne(services, 'shakepe_orders', orderPayload,
+						schema,
+						{
+							admin: true
+						}
+					);
+				} else if (campaignStatus === 'active') {
+					orderPayload.status = constant.status.ORDER_COMPLETED;
+					order = await createOne(services, 'shakepe_orders', orderPayload, schema, { admin: true });
+				}
+
 				if (order.message) {
 					logGenerator(
-						{
-							error: order.message,
-						},
+						{ error: order.message },
 						constant.log_type.error,
 						constant.collection_name.diy_log,
 						schema,
-						{
-							admin: true,
-						},
+						{ admin: true },
 						services
 					);
-
 					res.status(402).send({ message: order.message });
-				} else {
-					req.order = order;
+				} else if (campaign && campaignStatus === 'active') {
 					const campaignResponse = await axios.post(env.CAMPAIGN_URL + '/reward/diy-link', {
 						rewardCampaignIds: [campaign],
 					});
 
 					logGenerator(
-						{
-							message: campaignResponse.data,
-						},
+						{ message: campaignResponse.data },
 						constant.log_type.success,
 						constant.collection_name.diy_log,
 						schema,
-						{
-							admin: true,
-						},
+						{ admin: true },
 						services
 					);
+
 					res.status(201).send({
 						order_id: order,
 						campaign_response: campaignResponse.data,
 					});
+				} else {
+					res.status(201).send({ order_id: order, message: 'Order created but campaign is not active yet' });
 				}
 			} else {
 				logGenerator(
 					{
 						body: req.body,
 						header: req.headers,
-						query: req.query,
+						query: req.query
 					},
 					constant.log_type.log,
 					constant.collection_name.diy_log,
 					schema,
-					{
-						admin: true,
-					},
+					{ admin: true },
 					services
 				);
-				res.status(400).send({ message: 'Required Parameters are not there' });
+				res.status(400).send({ message: 'Required Parameters are missing' });
 			}
 		} catch (error) {
 			logGenerator(
@@ -419,33 +496,207 @@ export default defineEndpoint(async (router, { services, getSchema, database }) 
 					body: req.body,
 					header: req.headers,
 					query: req.query,
-					error: error,
+					error
 				},
 				constant.log_type.error,
 				constant.collection_name.diy_log,
 				schema,
-				{
-					admin: true,
-				},
+				{ admin: true },
 				services
 			);
+
 			if (req.order) {
-				const order = await updateOne({ status: 'Order Cancelled' }, 'shakepe_orders', services, req.order, schema, {
-					admin: true,
-				});
+				await updateOne(
+					{ status: 'Order Cancelled' },
+					'shakepe_orders',
+					services,
+					req.order,
+					schema,
+					{ admin: true }
+				);
+
 				res.status(400).send({
 					errorMessage: 'Something Went Wrong',
 					error: {
 						body: req.body,
 						header: req.headers,
 						query: req.query,
-						error: error,
+						error,
 						order: req.order,
 						order_status: 'Cancelled',
 					},
 				});
+			} else {
+				res.status(400).send({ errorMessage: 'Something Went Wrong', error });
 			}
-			res.status(400).send({ errorMessage: 'Something Went Wrong', error: error });
+		}
+	});
+	// Order Complete
+	router.patch('/orders/complete', async (req: any, res: any) => {
+		try {
+			const { campaign } = req.body;
+
+			if (!(campaign)) {
+				return res.status(400).send({
+					message: 'OrderId and Campaign are required.'
+				});
+			}
+
+			// Get order details
+			const orderData = await getDataFromCollection(
+				services,
+				{
+					campaignID: {
+						_eq: campaign
+					}
+				},
+				['status', 'campaignID'],
+				1,
+				schema,
+				'shakepe_orders'
+			);
+
+			if (!orderData || orderData.length === 0) {
+				return res.status(404).send({
+					message: 'Order not found.'
+				});
+			}
+
+			const order = orderData[0];
+
+			// Check if order is in "Order Open" status
+			if (order.status !== constant.status.ORDER_OPEN) {
+				return res.status(400).send({
+					message: 'Only orders with "Order Open" status can be completed.'
+				});
+			}
+
+			// Check if campaign ID matches
+			if (Number(order.campaignID) !== Number(campaign)) {
+				return res.status(400).send({
+					message: 'Campaign ID does not match the order.'
+				});
+			}
+
+			// Update order status to completed
+			await updateOne(
+				{ status: constant.status.ORDER_COMPLETED },
+				'shakepe_orders',
+				services,
+				campaign,
+				schema,
+				{ admin: true }
+			);
+
+			// Call campaign API
+			const campaignResponse = await axios.post(env.CAMPAIGN_URL + '/reward/diy-link', {
+				rewardCampaignIds: [campaign],
+			});
+
+			// Log success
+			logGenerator(
+				{ message: campaignResponse.data },
+				constant.log_type.success,
+				constant.collection_name.diy_log,
+				schema,
+				{ admin: true },
+				services
+			);
+
+			return res.status(200).send({
+				message: 'Order completed successfully',
+				campaignID: campaign,
+				campaign_response: campaignResponse.data
+			});
+
+		} catch (error) {
+			// Log error
+			logGenerator(
+				{
+					body: req.body,
+					error
+				},
+				constant.log_type.error,
+				constant.collection_name.diy_log,
+				schema,
+				{ admin: true },
+				services
+			);
+
+			res.status(500).send({
+				message: 'Internal Server Error',
+				error
+			});
+		}
+	});
+	//Order cancellation
+	router.patch('/orders/cancel', async (req: any, res: any) => {
+		try {
+			const { campaign, campaignStatus } = req.body;
+			if (!(campaign && campaignStatus)) {
+				return res.status(400).send({
+					message: 'Campaign, and CampaignStatus are required.'
+				});
+			}
+			if (campaignStatus.toLowerCase() !== 'scheduled') {
+				return res.status(400).send({
+					message: 'Only open orders under scheduled campaigns can be cancelled.'
+				})
+			}
+			const orderData = await getDataFromCollection(
+				services,
+				{
+					_and: [
+						{
+							campaignID:
+							{
+								_eq: campaign
+							}
+						},
+						{
+							status:
+							{
+								_eq: constant.status.ORDER_OPEN
+							}
+						}
+					]
+				},
+				['id', 'status', 'campaignID'],
+				1,
+				schema,
+				'shakepe_orders'
+			);
+
+			if (!orderData || orderData.length === 0) {
+				return res.status(404).send({
+					message: 'No Order found for this campaign.'
+				});
+			}
+
+			const order = orderData[0];
+			const orderId = order.id;
+
+			if (order.status !== constant.status.ORDER_OPEN) {
+				return res.status(400).send({
+					message: 'Invalid Order Status.'
+				})
+			}
+			await updateOne(
+				{ status: constant.status.ORDER_CANCELLED },
+				'shakepe_orders',
+				services,
+				orderId,
+				schema,
+				{ admin: true }
+			);
+			return res.status(200).send({
+				message: 'Order cancelled successfully.'
+			});
+		} catch (error) {
+			res.status(500).send({
+				message: 'Internal Server Error',
+				error
+			});
 		}
 	});
 	router.post('/clientdetails', authMiddleware, async (req: any, res: any) => {
@@ -513,39 +764,85 @@ export default defineEndpoint(async (router, { services, getSchema, database }) 
 					'sd_brand_details'
 				);
 
+				// Static values for product type mapping
+				// These values can be overridden by the dynamic values from selectedProducts
+				const staticConfig = {
+					commerical: 'Upfront',
+					payment_terms: 'Advance',
+					discount: 0, // default, can be overridden
+					avenues: 'Avenues',
+					approval_status: 'Pending',
+					status: 'InActive',					
+				};
+				// Dynamic values for product type mapping
+				// These values can be overridden by the static values above
+				const selectedProducts = [
+					{
+						product: 'Links',
+						product_type: 6,
+						full_fillment: 'SMS',
+					},
+					{
+						product: 'ShakePe Points',
+						product_type: 7,						
+						full_fillment: 'Email',
+					},
+					{
+						product: 'ShakePe Codes',
+						product_type: 8,
+						validity: 6,
+						form_factor: 'Virtual',
+						reward_type: 'Code',
+						redemption_platform: 'Standard',
+					},
+				];
+				// Create product type mapping array
+				// This will combine the static and dynamic values for each product type
+				const productTypeMappingCreate = selectedProducts.map((productConfig) => {
+					// Combine static and dynamic values
+					const config = { ...staticConfig, ...productConfig };
+
+					const mapping: any = {
+						product: config.product,
+						product_type: config.product_type,
+						commerical: config.commerical,
+						payment_terms: config.payment_terms,
+						discount: config.discount,
+						full_fillment: config.full_fillment,
+						avenues: config.avenues,
+						form_factor: config.form_factor,
+						approval_status: config.approval_status,
+						status: config.status,
+						brands: {
+							create:
+								brand_details?.map((brand: any) => ({
+									client_product_mapping_id: '+',
+									sd_brand_details_id: { id: brand.id },
+								})) || [],
+							update: [],
+							delete: [],
+						},
+					};
+					// Add validity only if it's provided
+					if (config.validity) {
+						mapping.validity = config.validity;
+					}
+					return mapping;
+				});
+
+
 				const data = {
 					client_name: client_name,
 					client_type: 'Corporate',
 					client_email: client_email,
+					status: 'InActive',
 					pan_number: pan_number,
 					company_website: company_website,
 					company_linkedin_profile: company_linkedin_profile,
 					source: 'diy',
 					diy_status: 'not_verified',
 					product_type_mapping: {
-						create: [
-							{
-								product_type: 6,
-								product: 'Links',
-								commerical: 'Upfront',
-								payment_terms: 'Advance',
-								discount: 0,
-								full_fillment: 'SMS',
-								avenues: 'Avenues',
-								brands: {
-									create: brand_details?.map((brand: any) => {
-										return {
-											client_product_mapping_id: '+',
-											sd_brand_details_id: {
-												id: brand.id,
-											},
-										};
-									}),
-									update: [],
-									delete: [],
-								},
-							},
-						],
+						create: productTypeMappingCreate,						
 						update: [],
 						delete: [],
 					},
@@ -706,18 +1003,16 @@ export default defineEndpoint(async (router, { services, getSchema, database }) 
 				admin: true,
 				user: req.accountability.user,
 			})
-			
+
 			res.status(200).json({
 				message: "Client details, address, and POC updated successfully",
 				clientUpdate: updateClientData ? updateClientData : null,
 				addressUpdate: addressUpdateResults.length > 0 ? addressUpdateResults : null,
 				pocUpdate: updatePocDetails.length > 0 ? updatePocDetails : null
 			});
-			
+
 		} catch (error) {
 			res.status(500).json({ message: "Error updating client details", error });
 		}
 	});
-
-
 });

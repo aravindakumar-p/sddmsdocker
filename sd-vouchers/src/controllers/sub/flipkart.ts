@@ -1,11 +1,10 @@
-
 import axios from 'axios';
 import LogSys from '../../helpers/logger';
 import VendorVouchers from '../../vendors';
 import helpers from '../../helpers/common';
 import Getters from '../../db/getters';
 import Setters from '../../db/setters';
-import config from '../../config.json';
+import { CONFIG } from '../../config';
 import { compress } from '@directus/shared/utils';
 
 /**
@@ -43,7 +42,7 @@ export default class FlipkartEgvController {
 				brand_sku,
 				amount,
 				currency,
-				config.vendor_id_mapping.FLIPKART_EGV,
+				CONFIG.vendor_id_mapping.FLIPKART_EGV,
 				reference_id, vendor_code
 			);
 			const vendorSkuMappingResponse = await get.mappedVendorActiveBrandSKU(brand_sku, vendor_code, reference_id);
@@ -109,8 +108,9 @@ export default class FlipkartEgvController {
 
 			const amount = brandDetails ? brandDetails['amount'] : null;
 			const currency = brandDetails ? brandDetails['currency'] : null;
+			const brand_name = brandDetails?.brand?.brand_name ?? null;
 
-			const vendorDetails = await get.getVendorFromVendorCode(config.vendor_id_mapping.FLIPKART_EGV, reference_id);
+			const vendorDetails = await get.getVendorFromVendorCode(CONFIG.vendor_id_mapping.FLIPKART_EGV, reference_id);
 			const vendorId = vendorDetails ? vendorDetails['id'] : null;
 
 			/* Redeemed TRUE/FALSE to set in Giftcard inventory */
@@ -159,6 +159,7 @@ export default class FlipkartEgvController {
 						soft_link_order_id: options.soft_link_order_id || '',
 						link_ledger_reference_id: link_reference_id ? options.reference_id : '',
 						bulk_qty_status: success ? success:false,
+						brand_name:brand_name,
 						...extra,
 					};
 
